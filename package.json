@@ -1,0 +1,62 @@
+{
+  "name": "verity-no-trono",
+  "productName": "Verity no Trono",
+  "version": "1.0.0",
+  "description": "Verity no Trono",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "prepare_app": "node build/prepare.js",
+    "dist": "node build/prepare.js && electron-builder --win nsis --x64 --publish never",
+    "release": "node build/release.js"
+  },
+  "devDependencies": {
+    "@electron/packager": "^18.3.6",
+    "electron": "^33.2.1",
+    "electron-builder": "^24.13.3",
+    "firebase": "^10.14.1"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  },
+  "author": "Verity no Trono",
+  "build": {
+    "appId": "com.veritynotrono.game",
+    "productName": "Verity no Trono",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "app/**/*"
+    ],
+    "electronLanguages": [
+      "pt-BR",
+      "en-US"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Verity no Trono",
+      "artifactName": "Verity-no-Trono-Setup-${version}.${ext}",
+      "deleteAppDataOnUninstall": false
+    },
+    "publish": []
+  }
+}

@@ -1,0 +1,306 @@
+'use strict';
+/* ===== data: player profile, economy, persistence, and the Firebase online layer ===== */
+const BOOSTS={
+  mut2:{name:'Sorte de Mutação ×2',desc:'Dobra a chance de mutação na próxima partida.',price:1500},
+  mut15:{name:'Sorte de Mutação ×1,5',desc:'+50% de chance de mutação na próxima partida.',price:700},
+  var2:{name:'Sorte de Variante ×2',desc:'Variantes raras saem com o dobro de peso.',price:1200},
+  var15:{name:'Sorte de Variante ×1,5',desc:'Variantes raras saem com +50% de peso.',price:600},
+  comfort:{name:'Barriga Blindada',desc:'Cólicas e paredes tiram metade do conforto.',price:500},
+  zone:{name:'Faixa Verde Larga',desc:'A faixa verde do trono fica 35% mais larga.',price:400},
+  lock:{name:'Tranca Extra',desc:'Se você perder uma batida, a porta aguenta uma vez.',price:900}
+};
+const INSTANT_SELL=.7,MAX_LVL=50;
+const itemBase=it=>VARS[it.v].base*MUT_BY[it.m].mult;
+const itemValue=it=>Math.round(itemBase(it)*(1+.08*((it.lvl||1)-1)));
+const upCost=it=>Math.round(itemBase(it)*.12*Math.pow(1.09,(it.lvl||1)-1));
+const sellPrice=it=>Math.round(itemValue(it)*INSTANT_SELL);
+const itemRank=it=>MUT_BY[it.m].i*100+VARS[it.v].r*10+VARS[it.v].base/1000;
+const xpAt=L=>Math.round(60*Math.pow(L-1,1.8));
+function levelOf(xp){let L=1;while(L<200&&xp>=xpAt(L+1))L++;return L}
+
+/* ---------- profile ---------- */
+const PKEY='verity-perfil';
+let P=null;
+function newProfile(){return{ver:3,uid:null,username:'',money:0,xp:0,best:0,runs:0,items:[],unknown:[],feat:null,featManual:false,
+  owned:{skin:[],hair:[],hat:[],glasses:[],shirt:[],bath:[1],intr:[]},eq:{...DEFAULT_EQ},boosts:{},friends:[],settled:[],updatedAt:0,
+  stats:{maxCombo:0,invaded:0,importedClaude:false}}}
+function sanitizeItem(it){
+  if(!it||typeof it!=='object'||!VARS[it.v]||!MUT_BY[it.m])return null;
+  return{id:String(it.id||rid()).replace(/[^a-z0-9]/gi,'').slice(0,24)||rid(),v:it.v,m:it.m,lvl:clamp(Math.round(+it.lvl||1),1,MAX_LVL),s:Math.max(0,Math.round(+it.s||0)),t:+it.t||Date.now()};
+}
+function sanitizeProfile(d){
+  const p=newProfile(); if(!d||typeof d!=='object')return p;
+  for(const k of['uid','username'])if(typeof d[k]==='string')p[k]=d[k].slice(0,40);
+  if(d.uid===null)p.uid=null;
+  for(const k of['money','xp','best','runs','updatedAt'])p[k]=Math.max(0,Math.round(+d[k]||0));
+  // Verities this version doesn't know (from a newer version) are kept untouched in p.unknown, never dropped.
+  const seen=new Set(),keepRaw=x=>x&&typeof x==='object'&&typeof x.v==='string'&&typeof x.m==='string';
+  if(Array.isArray(d.items))for(const raw of d.items){const it=sanitizeItem(raw);if(it){if(!seen.has(it.id)){seen.add(it.id);p.items.push(it)}}else if(keepRaw(raw))p.unknown.push(raw)}
+  if(Array.isArray(d.unknown))for(const raw of d.unknown){const it=sanitizeItem(raw);if(it){if(!seen.has(it.id)){seen.add(it.id);p.items.push(it)}}else if(keepRaw(raw))p.unknown.push(raw)}
+  p.unknown=p.unknown.slice(0,500);
+  p.feat=typeof d.feat==='string'?d.feat:null; p.featManual=!!d.featManual;
+  if(d.owned&&typeof d.owned==='object')for(const c of Object.keys(p.owned))if(Array.isArray(d.owned[c]))p.owned[c]=d.owned[c].filter(x=>typeof x==='string'||typeof x==='number');
+  if(d.eq&&typeof d.eq==='object')for(const c of Object.keys(p.eq))if(d.eq[c]!=null)p.eq[c]=d.eq[c];
+  if(d.boosts&&typeof d.boosts==='object')for(const k of Object.keys(BOOSTS))p.boosts[k]=Math.max(0,Math.round(+d.boosts[k]||0));
+  if(Array.isArray(d.friends))p.friends=d.friends.filter(x=>typeof x==='string').slice(0,200);
+  if(Array.isArray(d.settled))p.settled=d.settled.filter(x=>typeof x==='string').slice(-400);
+  if(d.stats&&typeof d.stats==='object')Object.assign(p.stats,d.stats);
+  ensureFree(p); return p;
+}
+function ensureFree(p){
+  for(const c of Object.keys(COS))for(const [k,it] of Object.entries(COS[c].items))if(it.price===0&&!p.owned[c].includes(k))p.owned[c].push(k);
+  if(!p.owned.bath.includes(1))p.owned.bath.unshift(1);
+  for(const [k,it] of Object.entries(INTRUDERS))if(it.price===0&&!p.owned.intr.includes(k))p.owned.intr.push(k);
+  for(const c of Object.keys(COS))if(!p.owned[c].includes(p.eq[c]))p.eq[c]=DEFAULT_EQ[c];
+  if(!p.owned.bath.includes(p.eq.bath))p.eq.bath=1;
+  if(!p.owned.intr.includes(p.eq.intr))p.eq.intr='irmao';
+}
+function loadProfile(){
+  let d=null; try{d=JSON.parse(localStorage.getItem(PKEY)||'null')}catch(e){}
+  P=sanitizeProfile(d);
+  if(!d){
+    try{
+      const old=JSON.parse(localStorage.getItem('verity-colecao')||'null');
+      if(old&&Array.isArray(old.items)){P.items=old.items.map(sanitizeItem).filter(Boolean);P.best=Math.max(0,+old.best||0)}
+      const ob=parseInt(localStorage.getItem('verity-best')||'0',10)||0; if(ob>P.best)P.best=ob;
+    }catch(e){}
+  }
+}
+function saveProfile(){
+  P.updatedAt=Date.now();
+  if(!SMOKE_RUN)try{localStorage.setItem(PKEY,JSON.stringify(P))}catch(e){}
+  schedulePush();
+  if(typeof onProfileChange==='function')onProfileChange();
+}
+const featured=()=>P.items.find(i=>i.id===P.feat)||mostValuable();
+const mostValuable=()=>P.items.reduce((b,i)=>!b||itemValue(i)>itemValue(b)?i:b,null);
+const rarest=()=>P.items.reduce((b,i)=>!b||itemRank(i)>itemRank(b)?i:b,null);
+const totalValue=(items=P.items)=>items.reduce((s,i)=>s+itemValue(i),0);
+const level=()=>levelOf(P.xp);
+
+/* ---------- economy actions (return an error string, or '' on success) ---------- */
+function spend(n){if(P.money<n)return 'Dinheiro insuficiente.';P.money-=n;return ''}
+function buyCos(cat,k){const it=COS[cat].items[k];if(!it||P.owned[cat].includes(k))return 'Indisponível.';const e=spend(it.price);if(e)return e;P.owned[cat].push(k);P.eq[cat]=k;saveProfile();return ''}
+function equipCos(cat,k){if(!P.owned[cat].includes(k))return 'Você não tem esse item.';P.eq[cat]=k;saveProfile();return ''}
+function buyBoost(k){const b=BOOSTS[k];if(!b)return 'Indisponível.';const e=spend(b.price);if(e)return e;P.boosts[k]=(P.boosts[k]||0)+1;saveProfile();return ''}
+function buyBath(n){const b=bathOf(n);if(P.owned.bath.includes(n))return 'Você já tem.';if(!P.owned.bath.includes(n-1))return 'Compre o banheiro anterior primeiro.';const e=spend(b.price);if(e)return e;P.owned.bath.push(n);P.eq.bath=n;saveProfile();return ''}
+function equipBath(n){if(!P.owned.bath.includes(n))return 'Você não tem esse banheiro.';P.eq.bath=n;saveProfile();return ''}
+function buyIntr(k){const it=INTRUDERS[k];if(!it||P.owned.intr.includes(k))return 'Indisponível.';const e=spend(it.price);if(e)return e;P.owned.intr.push(k);P.eq.intr=k;saveProfile();return ''}
+function equipIntr(k){if(!P.owned.intr.includes(k))return 'Você não tem esse invasor.';P.eq.intr=k;saveProfile();return ''}
+function sellItem(id){const i=P.items.findIndex(x=>x.id===id);if(i<0)return 'Verity não encontrada.';const it=P.items[i],v=sellPrice(it);P.items.splice(i,1);if(P.feat===id){P.feat=null;P.featManual=false}P.money+=v;saveProfile();return ''}
+function upgradeItem(id){const it=P.items.find(x=>x.id===id);if(!it)return 'Verity não encontrada.';if(it.lvl>=MAX_LVL)return 'Nível máximo.';const e=spend(upCost(it));if(e)return e;it.lvl++;saveProfile();return ''}
+function setFeatured(id){P.feat=id;P.featManual=true;saveProfile()}
+function takeItems(ids){const out=[];for(const id of ids){const i=P.items.findIndex(x=>x.id===id);if(i<0)return null;out.push(P.items[i])}P.items=P.items.filter(x=>!ids.includes(x.id));if(ids.includes(P.feat)){P.feat=null;P.featManual=false}return out}
+function giveItems(items){for(const raw of items){const it=sanitizeItem(raw);if(!it){if(raw&&typeof raw==='object'&&typeof raw.v==='string')P.unknown.push(raw);continue}if(P.items.some(x=>x.id===it.id))it.id=rid();P.items.push(it)}}
+const hasUnknown=items=>(items||[]).some(i=>!sanitizeItem(i));
+const UPDATE_MSG='Essa oferta tem uma Verity de uma versão mais nova do jogo. Atualize o jogo pra aceitar.';
+
+/* ======================================================================
+   ONLINE (Firebase). Each player signs in anonymously; their public profile
+   lives in players/{uid}, their collection in inv/{uid}. Trades and market
+   listings hold the offered Verities in escrow until the other side settles.
+   ====================================================================== */
+const NET={status:'off',msg:'',uid:null,fs:null,unsubs:[],reqIn:[],reqOut:[],tradesIn:[],tradesOut:[],myListings:[],pushTimer:null,pushing:false,again:false};
+const online=()=>NET.status==='online';
+function netChanged(){if(typeof onNetChange==='function')onNetChange()}
+function netErr(e){NET.msg=String(e&&e.message||e);netChanged()}
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('não carregou '+src));document.head.append(s)})}
+async function netInit(){
+  const cfg=typeof FIREBASE_CONFIG!=='undefined'?FIREBASE_CONFIG:null;
+  if(SMOKE_RUN&&!/[?&]net=1/.test(location.search)){NET.status='off';netChanged();return}
+  if(!IS_APP){NET.status='web';netChanged();await importClaudeLegacy();return}
+  if(!cfg||!cfg.apiKey){NET.status='sem-config';netChanged();return}
+  NET.status='conectando'; netChanged();
+  // Never go online on an outdated build: wait for the update check first.
+  if(window.desktop.waitUpdateCheck){
+    const u=await window.desktop.waitUpdateCheck().catch(()=>'error');
+    if(u==='available'||u==='downloading'||u==='ready'){NET.status='atualizando';netChanged();return}
+  }
+  try{
+    if(!window.firebase){await loadScript('vendor/firebase-app-compat.js');await loadScript('vendor/firebase-auth-compat.js');await loadScript('vendor/firebase-firestore-compat.js')}
+    if(!firebase.apps.length)firebase.initializeApp(cfg);
+    NET.fs=firebase.firestore(); try{NET.fs.settings({experimentalAutoDetectLongPolling:true,merge:true})}catch(e){}
+    const auth=firebase.auth();
+    const user=await new Promise((res,rej)=>{const un=auth.onAuthStateChanged(u=>{un();if(u)res(u);else auth.signInAnonymously().then(c=>res(c.user),rej)},rej)});
+    NET.uid=user.uid;
+    await pullProfile();
+    NET.status='online'; NET.msg='';
+    if(P.username){try{await claimUsername(P.username)}catch(e){P.username='';NET.msg=e.message;saveProfile()}}
+    subscribeAll(); pushNow();
+  }catch(e){NET.status='erro';NET.msg=String(e&&e.message||e)}
+  netChanged();
+}
+async function pullProfile(){
+  const fs=NET.fs,uid=NET.uid;
+  const [pd,id]=await Promise.all([fs.collection('players').doc(uid).get(),fs.collection('inv').doc(uid).get()]);
+  if(pd.exists){
+    const r=pd.data(),remoteNewer=(+r.updatedAt||0)>(P.updatedAt||0)||P.uid!==uid;
+    if(remoteNewer){
+      const inv=id.exists?id.data():{};
+      P=sanitizeProfile({...r,uid,items:inv.items||[],feat:inv.feat||null,featManual:!!inv.featManual});
+      try{localStorage.setItem(PKEY,JSON.stringify(P))}catch(e){}
+    }
+  }
+  P.uid=uid;
+}
+function playerDoc(){
+  const f=featured(),r=rarest();
+  return{username:P.username,uname_lc:P.username.toLowerCase(),xp:P.xp,level:level(),money:P.money,best:P.best,runs:P.runs,
+    totalValue:totalValue(),count:P.items.length,bestV:f?{v:f.v,m:f.m,lvl:f.lvl,val:itemValue(f)}:null,rareV:r?{v:r.v,m:r.m,lvl:r.lvl}:null,
+    eq:P.eq,owned:P.owned,boosts:P.boosts,friends:P.friends,settled:P.settled.slice(-300),stats:P.stats,updatedAt:P.updatedAt};
+}
+function schedulePush(){if(!online())return;clearTimeout(NET.pushTimer);NET.pushTimer=setTimeout(pushNow,700)}
+async function pushNow(){
+  if(!online()||!P.username)return;
+  if(NET.pushing){NET.again=true;return}
+  NET.pushing=true;
+  try{
+    const b=NET.fs.batch();
+    b.set(NET.fs.collection('players').doc(NET.uid),playerDoc());
+    b.set(NET.fs.collection('inv').doc(NET.uid),{items:[...P.items,...P.unknown],feat:P.feat,featManual:P.featManual,username:P.username,updatedAt:P.updatedAt});
+    await b.commit();
+  }catch(e){netErr(e)}
+  NET.pushing=false; if(NET.again){NET.again=false;pushNow()}
+}
+async function claimUsername(name){
+  name=String(name||'').trim(); const lc=name.toLowerCase();
+  if(!/^[a-z0-9_]{3,16}$/.test(lc))throw new Error('Use de 3 a 16 letras, números ou _ (sem espaço nem acento).');
+  if(!online()){P.username=name;saveProfile();return}
+  const ref=NET.fs.collection('usernames').doc(lc);
+  await NET.fs.runTransaction(async tx=>{const d=await tx.get(ref);if(d.exists&&d.data().uid!==NET.uid)throw new Error('O nome "'+name+'" já tem dono.');tx.set(ref,{uid:NET.uid,name})});
+  const old=P.username&&P.username.toLowerCase(); if(old&&old!==lc){try{const o=await NET.fs.collection('usernames').doc(old).get();if(o.exists&&o.data().uid===NET.uid)await o.ref.delete()}catch(e){}}
+  P.username=name; saveProfile(); pushNow();
+}
+const settledHas=k=>P.settled.includes(k);
+function settle(k){P.settled.push(k);if(P.settled.length>400)P.settled=P.settled.slice(-400)}
+function subscribeAll(){
+  const fs=NET.fs,uid=NET.uid,mapDocs=s=>s.docs.map(d=>({id:d.id,...d.data()}));
+  NET.unsubs.forEach(u=>u()); NET.unsubs=[];
+  NET.unsubs.push(fs.collection('friendReqs').where('to','==',uid).onSnapshot(s=>{NET.reqIn=mapDocs(s).filter(r=>r.status==='pending');netChanged()},netErr));
+  NET.unsubs.push(fs.collection('friendReqs').where('from','==',uid).onSnapshot(s=>{
+    NET.reqOut=mapDocs(s).filter(r=>r.status==='pending');
+    for(const r of mapDocs(s))if(r.status==='accepted'){
+      if(!P.friends.includes(r.to)){P.friends.push(r.to);saveProfile()}
+      fs.collection('friendReqs').doc(r.id).update({status:'done'}).catch(()=>{});
+    }
+    netChanged();
+  },netErr));
+  NET.unsubs.push(fs.collection('trades').where('to','==',uid).onSnapshot(s=>{NET.tradesIn=mapDocs(s).sort((a,b)=>(b.at||0)-(a.at||0));netChanged()},netErr));
+  NET.unsubs.push(fs.collection('trades').where('from','==',uid).onSnapshot(s=>{
+    NET.tradesOut=mapDocs(s).sort((a,b)=>(b.at||0)-(a.at||0));
+    for(const t of NET.tradesOut){
+      const k='t:'+t.id; if(settledHas(k)||t.fromSettled)continue;
+      if(t.status==='accepted'){giveItems(t.want||[]);settle(k);saveProfile();toastSafe(`${t.toName} aceitou sua troca!`);fs.collection('trades').doc(t.id).update({fromSettled:true}).catch(()=>{})}
+      else if(t.status==='declined'){giveItems(t.give||[]);P.money+=Math.max(0,+t.money||0);settle(k);saveProfile();toastSafe(`${t.toName} recusou sua troca. Suas Verities voltaram.`);fs.collection('trades').doc(t.id).update({fromSettled:true}).catch(()=>{})}
+    }
+    netChanged();
+  },netErr));
+  NET.unsubs.push(fs.collection('market').where('seller','==',uid).onSnapshot(s=>{
+    NET.myListings=mapDocs(s).sort((a,b)=>(b.at||0)-(a.at||0));
+    for(const l of NET.myListings){
+      const k='m:'+l.id; if(l.status!=='sold'||l.paid||settledHas(k))continue;
+      P.money+=Math.max(0,+l.price||0); settle(k); saveProfile(); toastSafe(`${l.buyerName||'Alguém'} comprou sua ${fullName(l.item.v,l.item.m)} por ${money(l.price)}!`);
+      fs.collection('market').doc(l.id).update({paid:true}).catch(()=>{});
+    }
+    netChanged();
+  },netErr));
+}
+function toastSafe(m){if(typeof toast==='function')toast(m)}
+const needOnline=()=>online()?'':'Você precisa estar online pra isso.';
+
+/* friends */
+async function lookupUser(name){
+  const lc=String(name||'').trim().toLowerCase(); if(!lc)throw new Error('Digite um nome.');
+  const d=await NET.fs.collection('usernames').doc(lc).get(); if(!d.exists)throw new Error('Ninguém com o nome "'+name+'".');
+  return d.data();
+}
+async function sendFriendRequest(name){
+  const e=needOnline();if(e)throw new Error(e);
+  const u=await lookupUser(name);
+  if(u.uid===NET.uid)throw new Error('Esse é você.');
+  if(P.friends.includes(u.uid))throw new Error(u.name+' já é seu amigo.');
+  if(NET.reqOut.some(r=>r.to===u.uid))throw new Error('Pedido já enviado.');
+  const back=NET.reqIn.find(r=>r.from===u.uid); if(back){await acceptFriend(back);return 'accepted'}
+  await NET.fs.collection('friendReqs').add({from:NET.uid,fromName:P.username,to:u.uid,toName:u.name,status:'pending',at:Date.now()});
+  return 'sent';
+}
+async function acceptFriend(r){if(!P.friends.includes(r.from))P.friends.push(r.from);saveProfile();await NET.fs.collection('friendReqs').doc(r.id).update({status:'accepted'})}
+async function declineFriend(r){await NET.fs.collection('friendReqs').doc(r.id).update({status:'declined'})}
+function removeFriend(uid){P.friends=P.friends.filter(x=>x!==uid);saveProfile()}
+async function fetchPlayer(uid){
+  const [p,i]=await Promise.all([NET.fs.collection('players').doc(uid).get(),NET.fs.collection('inv').doc(uid).get()]);
+  if(!p.exists)return null;
+  const d=p.data(),items=(i.exists&&Array.isArray(i.data().items)?i.data().items:[]).map(sanitizeItem).filter(Boolean);
+  return{uid,username:String(d.username||'?').slice(0,20),level:levelOf(+d.xp||0),xp:+d.xp||0,money:+d.money||0,best:+d.best||0,eq:sanitizeProfile({eq:d.eq,owned:d.owned}).eq,items,feat:i.exists?i.data().feat:null};
+}
+async function fetchFriends(){return(await Promise.all(P.friends.map(u=>fetchPlayer(u).catch(()=>null)))).filter(Boolean)}
+
+/* trades */
+async function proposeTrade(to,toName,giveIds,want,cash){
+  const e=needOnline();if(e)throw new Error(e);
+  cash=Math.max(0,Math.round(+cash||0));
+  if(!giveIds.length&&!cash)throw new Error('Ofereça pelo menos uma Verity ou dinheiro.');
+  if(!want.length)throw new Error('Escolha o que você quer receber.');
+  if(cash>P.money)throw new Error('Dinheiro insuficiente.');
+  const give=takeItems(giveIds); if(!give)throw new Error('Alguma Verity sua não está mais na coleção.');
+  P.money-=cash; saveProfile();
+  try{await NET.fs.collection('trades').add({from:NET.uid,fromName:P.username,to,toName,give,want:want.map(sanitizeItem),money:cash,status:'open',at:Date.now(),fromSettled:false})}
+  catch(err){giveItems(give);P.money+=cash;saveProfile();throw err}
+}
+async function acceptTrade(t){
+  if(hasUnknown(t.give))throw new Error(UPDATE_MSG);
+  const ids=(t.want||[]).map(i=>i.id); if(!ids.every(id=>P.items.some(x=>x.id===id)))throw new Error('Você não tem mais alguma das Verities pedidas.');
+  const ref=NET.fs.collection('trades').doc(t.id);
+  await NET.fs.runTransaction(async tx=>{const d=await tx.get(ref);if(!d.exists||d.data().status!=='open')throw new Error('Essa troca não está mais aberta.');tx.update(ref,{status:'accepted'})});
+  takeItems(ids); giveItems(t.give||[]); P.money+=Math.max(0,+t.money||0); settle('t:'+t.id); saveProfile();
+}
+async function declineTrade(t){const ref=NET.fs.collection('trades').doc(t.id);await NET.fs.runTransaction(async tx=>{const d=await tx.get(ref);if(!d.exists||d.data().status!=='open')throw new Error('Essa troca não está mais aberta.');tx.update(ref,{status:'declined'})})}
+async function cancelTrade(t){
+  const ref=NET.fs.collection('trades').doc(t.id);
+  await NET.fs.runTransaction(async tx=>{const d=await tx.get(ref);if(!d.exists||d.data().status!=='open')throw new Error('Essa troca não está mais aberta.');tx.update(ref,{status:'canceled',fromSettled:true})});
+  if(!settledHas('t:'+t.id)){giveItems(t.give||[]);P.money+=Math.max(0,+t.money||0);settle('t:'+t.id);saveProfile()}
+}
+
+/* market */
+async function listItem(id,price){
+  const e=needOnline();if(e)throw new Error(e);
+  price=Math.round(+price||0); if(price<1||price>1e9)throw new Error('Preço inválido.');
+  const got=takeItems([id]); if(!got)throw new Error('Verity não encontrada.');
+  saveProfile();
+  try{await NET.fs.collection('market').add({seller:NET.uid,sellerName:P.username,item:got[0],price,status:'open',at:Date.now(),paid:false})}
+  catch(err){giveItems(got);saveProfile();throw err}
+}
+async function fetchMarket(){const s=await NET.fs.collection('market').where('status','==','open').limit(200).get();return s.docs.map(d=>({id:d.id,...d.data()})).filter(l=>l.item&&VARS[l.item.v]&&MUT_BY[l.item.m])}
+async function buyListing(l){
+  if(l.seller===NET.uid)throw new Error('Esse anúncio é seu.');
+  if(hasUnknown([l.item]))throw new Error(UPDATE_MSG);
+  if(P.money<l.price)throw new Error('Dinheiro insuficiente.');
+  const ref=NET.fs.collection('market').doc(l.id);
+  await NET.fs.runTransaction(async tx=>{const d=await tx.get(ref);if(!d.exists||d.data().status!=='open')throw new Error('Alguém comprou antes.');tx.update(ref,{status:'sold',buyer:NET.uid,buyerName:P.username,soldAt:Date.now()})});
+  P.money-=l.price; giveItems([l.item]); saveProfile();
+}
+async function cancelListing(l){
+  const ref=NET.fs.collection('market').doc(l.id);
+  await NET.fs.runTransaction(async tx=>{const d=await tx.get(ref);if(!d.exists||d.data().status!=='open')throw new Error('Esse anúncio já foi vendido ou cancelado.');tx.update(ref,{status:'canceled'})});
+  if(!settledHas('m:'+l.id)){giveItems([l.item]);settle('m:'+l.id);saveProfile()}
+}
+
+/* ranking */
+const RANK_FIELDS={xp:'Nível',best:'Recorde',money:'Dinheiro',totalValue:'Coleção'};
+async function fetchRanking(field){
+  const s=await NET.fs.collection('players').orderBy(field,'desc').limit(50).get();
+  return s.docs.map(d=>{const x=d.data();return{uid:d.id,username:String(x.username||'?').slice(0,20),level:levelOf(+x.xp||0),xp:+x.xp||0,best:+x.best||0,money:+x.money||0,totalValue:+x.totalValue||0,count:+x.count||0,
+    bestV:x.bestV&&VARS[x.bestV.v]&&MUT_BY[x.bestV.m]?x.bestV:null,eq:sanitizeProfile({eq:x.eq,owned:x.owned}).eq}}).filter(r=>r.username&&r.username!=='?');
+}
+
+/* one-time import of the collection the web version kept in claude.ai */
+async function importClaudeLegacy(){
+  if(P.stats.importedClaude||!window.claude||typeof window.claude.use!=='function')return;
+  try{
+    const [db,user]=await Promise.all([window.claude.use('db'),window.claude.use('user')]); if(!db||!user)return;
+    const uid=await user.id(); if(!uid)return;
+    const s=await db.doc(`data/users/${uid}/colecao`).get();
+    if(s.exists){const d=s.data()||{};giveItems((d.items||[]).filter(i=>!P.items.some(x=>x.id===i.id)));P.best=Math.max(P.best,+d.best||0)}
+    P.stats.importedClaude=true; saveProfile();
+  }catch(e){}
+}

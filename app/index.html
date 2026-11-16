@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Verity no Trono</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv" aria-label="Área do jogo"></canvas>
+
+  <!-- primeiro acesso -->
+  <section id="setup" class="screen" hidden>
+    <p class="eyebrow">bem-vindo ao trono</p>
+    <h1>Verity no Trono</h1>
+    <p class="lead">Escolha seu nome de jogador. É por ele que seus amigos vão te achar.</p>
+    <form id="setupForm" class="row" autocomplete="off">
+      <input id="setupName" class="input" maxlength="16" placeholder="seu_nome" aria-label="Nome de jogador">
+      <button class="btn" type="submit">Entrar</button>
+    </form>
+    <p class="small err" id="setupErr"></p>
+    <p class="small" id="setupNet"></p>
+  </section>
+
+  <!-- menu principal -->
+  <section id="menu" class="screen menu" hidden>
+    <div class="mleft">
+      <p class="eyebrow">um jogo de esforço intestinal</p>
+      <h1>Verity no Trono</h1>
+      <button class="btn big" id="mPlay">Jogar</button>
+      <div class="mgrid2">
+        <button class="mbtn" id="mColl">Coleção</button>
+        <button class="mbtn" id="mShop">Loja</button>
+        <button class="mbtn" id="mMarket">Mercado</button>
+        <button class="mbtn" id="mFriends">Amigos <span class="badge" id="friendBadge" hidden></span></button>
+        <button class="mbtn" id="mRank">Ranking</button>
+        <button class="mbtn" id="mCfg">Configurações</button>
+      </div>
+      <div class="row left">
+        <button class="btn ghost sm" id="mFull">Tela cheia</button>
+        <button class="btn ghost sm" id="mQuit" hidden>Sair do jogo</button>
+      </div>
+    </div>
+    <div class="pcard" id="playerCard"></div>
+    <p class="mbath" id="menuBath"></p>
+  </section>
+
+  <!-- antes de cada etapa -->
+  <section id="card1" class="screen" hidden>
+    <p class="eyebrow">Etapa 1 de 2</p>
+    <h2>O Intestino</h2>
+    <p class="lead">Quanto mais confortável ela chegar, mais rara a Verity que sai.</p>
+    <ul class="rules">
+      <li><kbd>↑</kbd><kbd>↓</kbd> ou <kbd>W</kbd><kbd>S</kbd> pra desviar · ou arraste com o mouse</li>
+      <li><span class="ic colica"></span><span><b>Cólica</b> dói. Bater nas paredes também.</span></li>
+      <li><span class="ic fibra"></span><span><b>Fibra</b> dá pontos, conforto e alarga a faixa verde.</span></li>
+      <li><span class="ic cafe"></span><span><b>Café</b> é turbo. <span class="ic gas"></span> <b>Gás</b> te empurra.</span></li>
+    </ul>
+    <p class="small" id="card1Boosts"></p>
+    <div class="row"><button class="btn" id="go1">Bora</button><button class="btn ghost" id="back1">Menu</button></div>
+  </section>
+
+  <section id="card2" class="screen" hidden>
+    <p class="eyebrow">Etapa 2 de 2</p>
+    <h2>O Trono</h2>
+    <p class="lead" id="c2lead"></p>
+    <ul class="rules">
+      <li><span class="ic zona"></span><span>Segure <kbd>Espaço</kbd> (ou o mouse) pra fazer força. Fique na <b>faixa verde</b>.</span></li>
+      <li><span class="ic combo"></span><span>Cada segundo seguido na faixa sobe o <b>combo</b>. Pontos do trono = chance de <b>mutação</b>.</span></li>
+      <li><span class="ic porta"></span><span id="c2door"></span></li>
+      <li><span class="ic veia"></span><span>Força demais enche a <b>veia da testa</b>. Encheu, você desmaia.</span></li>
+    </ul>
+    <button class="btn" id="go2">Sentar</button>
+  </section>
+
+  <section id="fail" class="screen" hidden>
+    <p class="eyebrow" id="failEyebrow"></p>
+    <h2 id="failTitle"></h2>
+    <p class="lead" id="failMsg"></p>
+    <div class="row"><button class="btn" id="retryBtn">Tentar de novo</button><button class="btn ghost" id="failMenu">Menu</button></div>
+  </section>
+
+  <section id="pause" class="screen" hidden>
+    <h2>Pausado</h2>
+    <div class="row"><button class="btn" id="pResume">Continuar</button><button class="btn ghost" id="pCfg">Configurações</button><button class="btn ghost" id="pQuit">Desistir</button></div>
+    <p class="small">Desistir cancela esta partida.</p>
+  </section>
+
+  <section id="update" class="screen" hidden>
+    <p class="eyebrow">nova versão</p>
+    <h2 id="updTitle">Atualizando</h2>
+    <p class="lead" id="updMsg"></p>
+    <div class="xpbar updbar"><i id="updBar"></i></div>
+    <button class="btn" id="updBtn" hidden>Reiniciar e atualizar</button>
+  </section>
+
+  <section id="results" class="results" hidden>
+    <p class="eyebrow" id="rsRank"></p>
+    <p class="vname"><span class="mut" id="rsMut"></span><span id="rsVar"></span></p>
+    <p class="chips"><span class="chip" id="rsRar"></span><span class="chip gold" id="rsVal"></span></p>
+    <p class="small" id="rsSub"></p>
+    <dl class="stats">
+      <div><dt>Conforto</dt><dd id="stCom"></dd></div>
+      <div><dt>Combo máx</dt><dd id="stCombo"></dd></div>
+      <div><dt>Porta</dt><dd id="stDoor"></dd></div>
+      <div><dt>Pts trono</dt><dd id="stThrone"></dd></div>
+      <div><dt>Pontos</dt><dd id="stScore"></dd></div>
+      <div><dt>Recorde</dt><dd id="stBest"></dd></div>
+    </dl>
+    <div class="xpline"><span id="rsXp"></span><div class="xpbar"><i id="rsXpBar"></i></div></div>
+    <div class="row">
+      <button class="btn" id="rsAgain">Jogar de novo</button>
+      <button class="btn ghost sm" id="rsSell">Vender</button>
+      <button class="btn ghost sm" id="rsFlush">Descarga</button>
+      <button class="btn ghost sm" id="rsMenu">Menu</button>
+    </div>
+  </section>
+
+  <!-- painéis -->
+  <section id="coll" class="panel" hidden aria-label="Coleção">
+    <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Coleção</h3>
+      <div class="tabs" role="tablist"><button class="tab" data-tab="mine">Minhas Verities</button><button class="tab" data-tab="index">Índice de raridade</button></div>
+      <span class="wallet"></span></header>
+    <div class="pbody split" data-pane="mine">
+      <div class="pmain">
+        <div class="toolbar"><label>Ordenar <select id="collSort"><option value="val">Valor</option><option value="rar">Raridade</option><option value="lvl">Nível</option><option value="new">Mais recentes</option></select></label><span id="collCount"></span></div>
+        <div class="igrid" id="collGrid"></div>
+      </div>
+      <aside class="pside" id="collDetail"></aside>
+    </div>
+    <div class="pbody" data-pane="index" id="collIndex" hidden></div>
+  </section>
+
+  <section id="shop" class="panel" hidden aria-label="Loja">
+    <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Loja</h3>
+      <div class="tabs" role="tablist"><button class="tab" data-tab="boosts">Boosts</button><button class="tab" data-tab="baths">Banheiros</button><button class="tab" data-tab="look">Visual</button><button class="tab" data-tab="intr">Invasores</button></div>
+      <span class="wallet"></span></header>
+    <div class="pbody split">
+      <div class="pmain" id="shopMain"></div>
+      <aside class="pside"><canvas id="shopPrev" class="prev"></canvas><div id="shopInfo"></div></aside>
+    </div>
+  </section>
+
+  <section id="market" class="panel" hidden aria-label="Mercado">
+    <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Mercado</h3>
+      <div class="tabs" role="tablist"><button class="tab" data-tab="buy">Comprar</button><button class="tab" data-tab="mine">Meus anúncios</button></div>
+      <button class="btn ghost sm" id="mkRefresh">Atualizar</button><span class="wallet"></span></header>
+    <div class="pbody"><p class="notice" id="mkNotice"></p><div class="igrid wide" id="mkGrid"></div></div>
+  </section>
+
+  <section id="friends" class="panel" hidden aria-label="Amigos">
+    <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Amigos</h3>
+      <div class="tabs" role="tablist"><button class="tab" data-tab="list">Amigos</button><button class="tab" data-tab="trades">Trocas <span class="badge" id="tradeBadge" hidden></span></button></div>
+      <span class="wallet"></span></header>
+    <div class="pbody" data-pane="list">
+      <p class="notice" id="frNotice"></p>
+      <form id="addFriend" class="row left" autocomplete="off"><input id="addName" class="input" maxlength="16" placeholder="username do amigo" aria-label="Username do amigo"><button class="btn sm" type="submit">Adicionar amigo</button><span class="small" id="addMsg"></span></form>
+      <div id="frReqs"></div>
+      <div class="rows" id="frList"></div>
+    </div>
+    <div class="pbody" data-pane="trades" hidden><div id="trList"></div></div>
+  </section>
+
+  <section id="profile" class="panel" hidden aria-label="Perfil">
+    <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3 id="pfTitle">Perfil</h3><span class="wallet"></span></header>
+    <div class="pbody split">
+      <aside class="pside"><canvas id="pfPrev" class="prev"></canvas><div id="pfInfo"></div></aside>
+      <div class="pmain">
+        <div class="toolbar"><span>Clique nas Verities que você quer pedir numa troca.</span><button class="btn sm" id="pfTrade" disabled>Propor troca</button></div>
+        <div class="igrid" id="pfGrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="rank" class="panel" hidden aria-label="Ranking">
+    <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Ranking global</h3>
+      <div class="tabs" role="tablist"><button class="tab" data-tab="xp">Nível</button><button class="tab" data-tab="best">Recorde</button><button class="tab" data-tab="money">Dinheiro</button><button class="tab" data-tab="totalValue">Coleção</button></div>
+      <span class="wallet"></span></header>
+    <div class="pbody"><p class="notice" id="rkNotice"></p><div class="rows" id="rkList"></div></div>
+  </section>
+
+  <section id="cfg" class="panel" hidden aria-label="Configurações">
+    <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Configurações</h3></header>
+    <div class="pbody cols">
+      <div class="col">
+        <p class="ptitle">Música <span id="nowPlaying"></span></p>
+        <div class="tracks" role="radiogroup" aria-label="Música" id="trackList"></div>
+        <div class="sliders">
+          <label for="musVol">Volume da música <output id="musVolOut"></output></label><input type="range" id="musVol" min="0" max="100">
+          <label for="sfxVol">Volume dos efeitos <output id="sfxVolOut"></output></label><input type="range" id="sfxVol" min="0" max="100">
+        </div>
+        <div class="row left"><button class="pick" id="voiceToggle"></button><button class="pick" id="muteToggle"></button></div>
+      </div>
+      <div class="col">
+        <p class="ptitle">Tela</p>
+        <div class="row left"><button class="pick" id="fullToggle">Tela cheia</button><button class="pick" id="fullStart" hidden></button></div>
+        <p class="ptitle">Conta</p>
+        <p class="small" id="acctInfo"></p>
+        <form id="renameForm" class="row left" autocomplete="off"><input id="renameIn" class="input sm" maxlength="16" aria-label="Novo nome"><button class="btn sm" type="submit">Mudar nome</button></form>
+        <p class="small err" id="renameMsg"></p>
+        <p class="ptitle">Letra · Hino da Verity</p>
+        <div class="lyrics" id="lyricsBox"></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="mbox"><h3 id="modalTitle"></h3><div id="modalBody"></div><div class="row" id="modalActions"></div></div>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <button id="knockBtn" class="knock" hidden>OCUPADO! <kbd>E</kbd></button>
+  <button id="pauseBtn" class="mute" hidden>Pausa <kbd>P</kbd></button>
+</div>
+<script src="js/firebase-config.js"></script>
+<script src="js/core.js"></script>
+<script src="js/art.js"></script>
+<script src="js/data.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>

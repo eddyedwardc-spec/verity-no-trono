@@ -1,0 +1,48 @@
+rules_version = '2';
+// Regras do Verity no Trono. Cole tudo isto em Firestore Database → Regras → Publicar.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+
+    // Perfil público e coleção: qualquer jogador logado lê, só o dono escreve.
+    match /players/{uid} {
+      allow read: if signedIn();
+      allow write: if signedIn() && me() == uid;
+    }
+    match /inv/{uid} {
+      allow read: if signedIn();
+      allow write: if signedIn() && me() == uid;
+    }
+
+    // Nomes de jogador únicos.
+    match /usernames/{name} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.uid == me();
+      allow update, delete: if signedIn() && resource.data.uid == me() && (request.resource == null || request.resource.data.uid == me());
+    }
+
+    // Pedidos de amizade e trocas: só quem enviou e quem recebeu.
+    match /friendReqs/{id} {
+      allow read: if signedIn() && (resource.data.from == me() || resource.data.to == me());
+      allow create: if signedIn() && request.resource.data.from == me();
+      allow update: if signedIn() && (resource.data.from == me() || resource.data.to == me());
+    }
+    match /trades/{id} {
+      allow read: if signedIn() && (resource.data.from == me() || resource.data.to == me());
+      allow create: if signedIn() && request.resource.data.from == me() && request.resource.data.status == 'open';
+      allow update: if signedIn() && (resource.data.from == me() || resource.data.to == me());
+    }
+
+    // Mercado: todos leem; o vendedor cria e cancela; qualquer jogador pode marcar um anúncio aberto como comprado por ele.
+    match /market/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.seller == me() && request.resource.data.status == 'open';
+      allow update: if signedIn() && (
+        resource.data.seller == me() ||
+        (resource.data.status == 'open' && request.resource.data.status == 'sold' && request.resource.data.buyer == me()
+          && request.resource.data.price == resource.data.price && request.resource.data.seller == resource.data.seller)
+      );
+    }
+  }
+}
