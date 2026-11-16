@@ -310,3 +310,7 @@ canvas.prev{width:15em;height:15em}
 .regions.dims{margin-bottom:.35em}
 .regions.dims .pick{font-size:.9em;font-family:var(--display)}
 .regions.dims .pick[aria-pressed="true"]{background:var(--verity);color:var(--ink)}
+
+/* 1.7: boss drop chance on world cards */
+.excl .drop{font-size:.85em;font-weight:900;opacity:.75;margin-left:.3em}
+.excl .drop.ok{color:var(--ok);opacity:1}

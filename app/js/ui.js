@@ -159,7 +159,8 @@ function showBossCard(){
   const B=run.boss; $('bcEyebrow').textContent=_t("Chefe do mundo {0} · {1}",B.world,run.W.name);
   $('bcName').textContent=B.name; $('bcDesc').textContent=B.desc;
   const pic=$('bcPic'); pic.textContent=''; pic.append(thumbVerity(B.key,'none',8,{badge:false}));
-  $('bcPower').textContent=_t("Poder recomendado {0}. Sua equipe: {1}.",fmt(B.rec),fmt(run.power))+(run.power<B.rec?_t(" Vai ser difícil: dê upgrade, funda ou troque a equipe."):_t(" Você está forte o bastante."))+(petSummary(run.pet)?_t(" Pets: ")+petSummary(run.pet)+'.':'');
+  $('bcPower').textContent=_t("Poder recomendado {0}. Sua equipe: {1}.",fmt(B.rec),fmt(run.power))+(run.power<B.rec?_t(" Vai ser difícil: dê upgrade, funda ou troque a equipe."):_t(" Você está forte o bastante."))+(petSummary(run.pet)?_t(" Pets: ")+petSummary(run.pet)+'.':'')
+    +_t(" Prêmio: {0} ({1}, {2}).",VARS[B.drop].name,P.world.beaten.includes(B.world)?_t("10% de chance"):_t("garantido nessa primeira vitória"),BOSS_MUT_TXT[B.fase-1]);
   showOnly('bossCard');
 }
 $('bcGo').onclick=()=>{audioInit();startP2()};

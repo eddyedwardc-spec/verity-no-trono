@@ -160,7 +160,7 @@ REGIONS.forEach((R,ri)=>{for(let f=1;f<=5;f++){
   if(f===5)mods.push('jump','knocks');
   if(bi>=8)mods.push('strain');
   mods=[...new Set(mods)].filter(m=>m!=='none');
-  const boss={key:R.boss.key,name:f<5?_t("{0} · Fase {1}",R.boss.name,f):_t("{0} · Forma Final",R.boss.name),drop:f===5?R.boss.drop:null,rec,hp:Math.round((rec*.1+10)*1.25*28),limit:45,mods,world:n,region:R.n,fase:f,
+  const boss={key:R.boss.key,name:f<5?_t("{0} · Fase {1}",R.boss.name,f):_t("{0} · Forma Final",R.boss.name),drop:R.boss.drop,rec,hp:Math.round((rec*.1+10)*1.25*28),limit:45,mods,world:n,region:R.n,fase:f,
     desc:`${R.boss.desc} ${mods.length?_t("Aqui ")+mods.map(m=>MOD_TXT[m]).join(', ')+'.':''}`};
   // gentler curve: speed, obstacles and damage level off early so every world stays playable
   WORLDS.push({n,region:R.n,dim:R.dim,mutMin:D.mutMin||null,fase:f,name:`${R.name} ${ROMAN[f-1]}`,rname:R.name,sub:R.sub,special:R.special,pal:R.pal,pool:R.pool,boss,
@@ -169,5 +169,5 @@ REGIONS.forEach((R,ri)=>{for(let f=1;f<=5;f++){
 }});
 const SPECIALS={acido:_t("Poça de ácido: tira conforto."),radio:_t("Barril radioativo: dói, mas aumenta a chance de mutação."),gelo:_t("Cubo de gelo: você escorrega por 2 segundos."),pimenta:_t("Pimenta: turbo, mas arde."),asteroide:_t("Asteroide: se mexe e dói bastante."),bug:_t("Bug: inverte os controles por um tempo."),feijao:_t("Nuvem de feijão: empurra e dói."),chocolate:_t("Chocolate: gruda e te deixa lento."),raio:_t("Raio: choque que trava os controles."),mix:_t("Os perigos das 7 primeiras regiões."),mix2:_t("Todos os perigos que existem.")};
 for(const R of REGIONS.filter(R=>R.dim===1))for(const [k] of R.pool)VARS[k].hint=_t("Região {0}: {1}",R.n,R.name);
-for(const R of REGIONS.filter(R=>R.dim===1))VARS[R.boss.drop].hint=_t("Chefe final: {0}",R.boss.name);
+for(const R of REGIONS.filter(R=>R.dim===1))VARS[R.boss.drop].hint=_t("Chefe: {0} (qualquer fase)",R.boss.name);
 for(const D of DIMENSIONS.slice(1))VARS[D.drop].hint=_t("Último chefe da {0} (mundo {1})",D.name,D.last*5);

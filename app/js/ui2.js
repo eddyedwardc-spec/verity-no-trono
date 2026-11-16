@@ -140,7 +140,7 @@ function renderJourney(){
     b.onclick=()=>{jRegion=R.n;sfx.click();renderJourney()}; rg.append(b);
   }
   const R=REGIONS[jRegion-1];
-  $('jHint').textContent=_t("{0}: {1} {2} Cada fase tem um chefe; a Fase V é a forma final, que deixa a Verity própria dele.",R.name,R.sub,R.special?SPECIALS[R.special]:'')+(jD.mutMin?_t(" Na {0}, o que os chefes deixam vem no mínimo {1}.",jD.name,MUT_BY[jD.mutMin].name):'')+(canRebirth()?'':_t(" Renascer libera no mundo {0}.",rebirthReq()));
+  $('jHint').textContent=_t("{0}: {1} {2} Cada fase tem um chefe. A primeira vitória em cada fase garante a Verity do chefe; depois é 10%. Quanto maior a fase, melhor a mutação.",R.name,R.sub,R.special?SPECIALS[R.special]:'')+(jD.mutMin?_t(" Na {0}, o que os chefes deixam vem no mínimo {1}.",jD.name,MUT_BY[jD.mutMin].name):'')+(canRebirth()?'':_t(" Renascer libera no mundo {0}.",rebirthReq()));
   const g=$('jGrid'); g.textContent='';
   for(const Wd of WORLDS.filter(w=>w.region===jRegion)){
     const B=Wd.boss,open=Wd.n<=P.world.max,beaten=P.world.beaten.includes(Wd.n);
@@ -150,8 +150,9 @@ function renderJourney(){
     const bl=el('div','bline'); bl.append(document.createTextNode(B.name.replace(R.boss.name+' · ','')+' · ')); bl.append(el('span',tp>=B.rec?'ok':'bad',_t("poder {0}",fmt(B.rec))));
     if(beaten)bl.append(document.createTextNode(' · ✓')); c.append(bl);
     c.append(el('div','bline',B.mods.length?B.mods.map(m=>MOD_TXT[m]).join(', '):_t("sem truques")));
-    if(Wd.fase===5){const ex=el('div','excl');ex.append(document.createTextNode(_t("Deixa: ")));ex.append(thumbVerity(B.drop,'none',2.2,{locked:!P.items.some(i=>i.v===B.drop),badge:false}));c.append(ex)}
-    else if(Wd.pool.length){const ex=el('div','excl');for(const [k] of Wd.pool)ex.append(thumbVerity(k,'none',2,{locked:!P.items.some(i=>i.v===k),badge:false}));c.append(ex)}
+    {const ex=el('div','excl');ex.append(document.createTextNode(_t("Deixa: ")));ex.append(thumbVerity(B.drop,'none',2.2,{locked:!P.items.some(i=>i.v===B.drop),badge:false}));
+      const ch=el('small','drop'+(beaten?'':' ok'),(beaten?_t("10%"):_t("garantida"))+' · '+BOSS_MUT_TXT[Wd.fase-1]);ex.append(ch);c.append(ex)}
+    if(Wd.pool.length){const ex=el('div','excl');for(const [k] of Wd.pool)ex.append(thumbVerity(k,'none',2,{locked:!P.items.some(i=>i.v===k),badge:false}));c.append(ex)}
     const row=el('div','row'),pl=el('button','btn sm',_t("Jogar")),bs=el('button','btn sm danger',beaten?_t("Chefe"):_t("Chefe!"));
     pl.disabled=!open; bs.disabled=!open;
     pl.onclick=()=>{closeAllPanels();goCard1(Wd.n)}; bs.onclick=()=>{closeAllPanels();goBoss(Wd.n)};

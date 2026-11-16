@@ -31,6 +31,17 @@ function rollVariant(c,luck){
   for(const [k,w] of pool){if((r-=w)<0)return k}
   return pool[0][0];
 }
+/* Boss drops: the boss's own Verity is guaranteed the first time you beat each phase, then 10%.
+   Its mutation depends on the phase: phase 1 is mostly weak, phase 5 mostly strong. Luck only boosts Diamante and up. */
+const BOSS_REDROP=.1;
+const BOSS_MUT=[ // none, bronze, ouro, diamante, platina, galaxy, hacker, plineos, god
+  [45,30,15,6,3,.8,.2,0,0],
+  [30,30,20,10,6,3,.8,.2,0],
+  [15,25,25,17,10,5,2.5,.4,.1],
+  [5,15,25,22,16,10,5,1.5,.5],
+  [0,5,15,25,22,17,10,4,2]];
+const BOSS_MUT_TXT=[_t("mutação fraca"),_t("mutação razoável"),_t("mutação média"),_t("mutação boa"),_t("mutação ótima")];
+function rollBossMut(fase,luck){const w=BOSS_MUT[clamp(fase,1,5)-1].map((x,i)=>[String(i),x*(i>=3?luck:1)]).filter(p=>p[1]>0);return MUTS[+weighted(w)].k}
 function rollMut(T,luck){
   const m=clamp(T/700,.2,2.5)*luck;
   for(let i=MUTS.length-1;i>=1;i--){const u=MUTS[i];if(T>=u.min&&Math.random()<u.p*m)return u.k}
@@ -385,8 +396,8 @@ function startFinale(){
   const score=Math.round((run.score1+run.p1Comfort*4+T)*run.W.bonus);
   const B=run.boss; let vk,bossInfo=null;
   if(B){
-    const first=!P.world.beaten.includes(B.world),drop=first||Math.random()<.25;
-    vk=drop?(B.drop||regionDrop(B)):rollWorldVariant(run.world,80,varLuck());
+    const first=!P.world.beaten.includes(B.world),drop=first||Math.random()<BOSS_REDROP;
+    vk=drop?B.drop:rollWorldVariant(run.world,80,varLuck());
     const cash=Math.round(300*Math.pow(1.13,Math.min(B.world,WORLD_CAP))*Math.pow(1.03,Math.max(0,B.world-WORLD_CAP))*(first?1:.3)*rbCash()*evMods().money); P.money+=cash;
     track('boss');
     const slotsBefore=petSlots(),maxBefore=P.world.max;
@@ -394,7 +405,7 @@ function startFinale(){
     if(first){P.world.beaten.push(B.world);P.world.max=Math.min(WORLDS.length,Math.max(P.world.max,B.world+1));P.stats.maxBeaten=Math.max(P.stats.maxBeaten||0,P.world.beaten.length);P.stats.maxWorld=Math.max(P.stats.maxWorld||0,P.world.max);if(B.world===60)P.stats.beat60=1;if(B.world===WORLDS.length)P.stats.beat260=1;if(B.fase===5)announce(_t("derrotou {0} (mundo {1})!",B.name.replace(_t(" · Forma Final"),''),B.world))}
     bossInfo={first,drop,cash,name:B.name,world:B.world,unlocked:P.world.max>maxBefore?WORLDS[P.world.max-1].name:null,newSlot:petSlots()>slotsBefore};
   }else{const ev=evMods().vars;vk=ev.length&&Math.random()<.08?pick(ev):rollWorldVariant(run.world,run.p1Comfort,varLuck())}
-  let mk=rollMut(T,mutLuck());
+  let mk=bossInfo&&bossInfo.drop?rollBossMut(B.fase,mutLuck()):rollMut(T,mutLuck());
   if(bossInfo&&bossInfo.drop&&run.W.mutMin&&MUT_BY[mk].i<MUT_BY[run.W.mutMin].i)mk=run.W.mutMin;
   track('runs'); track('combo',q.maxCombo); if(VARS[vk].r>=2)track('rare');
   if(VARS[vk].r>=5||MUT_BY[mk].i>=6||VARS[vk].ev)announce(_t("tirou {0}!",fullName(vk,mk)));
