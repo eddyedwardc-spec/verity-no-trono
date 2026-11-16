@@ -1,4 +1,4 @@
-// Publishes a new version of Verity no Trono to GitHub Releases. Every installed copy updates itself on next launch.
+// Publishes a new version of Cague um Verity to GitHub Releases. Every installed copy updates itself on next launch.
 // Usage: node build/release.js [version] ["notas da versão"]
 //   version defaults to the next patch number (1.0.3 -> 1.0.4).
 const { execFileSync } = require('child_process');
@@ -27,7 +27,7 @@ fs.rmSync(path.join(root, 'release'), { recursive: true, force: true });
 run(process.execPath, [path.join(root, 'node_modules', 'electron-builder', 'cli.js'), '--win', 'nsis', '--x64', '--publish', 'never']);
 
 const rel = path.join(root, 'release');
-const files = ['latest.yml', `Verity-no-Trono-Setup-${ver}.exe`, `Verity-no-Trono-Setup-${ver}.exe.blockmap`].map(f => path.join(rel, f));
+const files = ['latest.yml', `Cague-um-Verity-Setup-${ver}.exe`, `Cague-um-Verity-Setup-${ver}.exe.blockmap`].map(f => path.join(rel, f));
 for (const f of files) if (!fs.existsSync(f)) throw new Error('faltou o arquivo ' + f);
-run(GH, ['release', 'create', 'v' + ver, ...files, '--repo', `${owner}/${REPO}`, '--title', `Verity no Trono ${ver}`, '--notes', notes]);
+run(GH, ['release', 'create', 'v' + ver, ...files, '--repo', `${owner}/${REPO}`, '--title', `Cague um Verity ${ver}`, '--notes', notes]);
 console.log(`RELEASED v${ver} https://github.com/${owner}/${REPO}/releases/tag/v${ver}`);

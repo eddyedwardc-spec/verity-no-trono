@@ -5,7 +5,10 @@ const fs = require('fs');
 const SMOKE = process.env.VERITY_SMOKE === '1';   // hidden self-test, used while building
 const ICON_OUT = process.env.VERITY_ICON_OUT;     // when set, renders the icon PNGs and exits
 
-app.setName('Verity no Trono');
+app.setName('Cague um Verity');
+// Saves live in %APPDATA%\Verity no Trono since the first version (the game's old name). Never change this path,
+// or every player's local profile and their online login (anonymous Firebase account) would be left behind.
+app.setPath('userData', path.join(app.getPath('appData'), 'Verity no Trono'));
 Menu.setApplicationMenu(null);
 
 function createWindow() {
@@ -14,7 +17,7 @@ function createWindow() {
     minWidth: 800, minHeight: 450,
     show: false,
     backgroundColor: '#000000',
-    title: 'Verity no Trono',
+    title: 'Cague um Verity',
     icon: path.join(__dirname, 'app', 'icon.png'),
     autoHideMenuBar: true,
     webPreferences: {
@@ -143,7 +146,7 @@ async function renderIcons(win) {
 }
 
 app.whenReady().then(() => {
-  if (UPDTEST) { console.log('VERSION ' + app.getVersion()); initUpdater(); return; }
+  if (UPDTEST) { console.log('VERSION ' + app.getVersion() + ' USERDATA ' + app.getPath('userData')); initUpdater(); return; }
   const win = createWindow();
   initUpdater();
   if (ICON_OUT) renderIcons(win);

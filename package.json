@@ -1,8 +1,8 @@
 {
   "name": "verity-no-trono",
-  "productName": "Verity no Trono",
-  "version": "1.0.1",
-  "description": "Verity no Trono",
+  "productName": "Cague um Verity",
+  "version": "1.0.2",
+  "description": "Cague um Verity",
   "main": "main.js",
   "private": true,
   "scripts": {
@@ -20,10 +20,10 @@
   "dependencies": {
     "electron-updater": "^6.3.9"
   },
-  "author": "Verity no Trono",
+  "author": "Cague um Verity",
   "build": {
     "appId": "com.veritynotrono.game",
-    "productName": "Verity no Trono",
+    "productName": "Cague um Verity",
     "directories": {
       "output": "release",
       "buildResources": "build"
@@ -53,8 +53,8 @@
       "perMachine": false,
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
-      "shortcutName": "Verity no Trono",
-      "artifactName": "Verity-no-Trono-Setup-${version}.${ext}",
+      "shortcutName": "Cague um Verity",
+      "artifactName": "Cague-um-Verity-Setup-${version}.${ext}",
       "deleteAppDataOnUninstall": false
     },
     "publish": [
