@@ -59,10 +59,10 @@
     <h2>O Intestino</h2>
     <p class="lead">Quanto mais confortável ela chegar, mais rara a Verity que sai.</p>
     <ul class="rules">
-      <li><kbd>↑</kbd><kbd>↓</kbd> ou <kbd>W</kbd><kbd>S</kbd> pra desviar · ou arraste com o mouse</li>
-      <li><span class="ic colica"></span><span><b>Cólica</b> dói. Bater nas paredes também.</span></li>
-      <li><span class="ic fibra"></span><span><b>Fibra</b> dá pontos, conforto e alarga a faixa verde.</span></li>
-      <li><span class="ic cafe"></span><span><b>Café</b> é turbo. <span class="ic gas"></span> <b>Gás</b> te empurra.</span></li>
+      <li data-t><kbd>↑</kbd><kbd>↓</kbd> ou <kbd>W</kbd><kbd>S</kbd> pra desviar · ou arraste com o mouse</li>
+      <li><span class="ic colica"></span><span data-t><b>Cólica</b> dói. Bater nas paredes também.</span></li>
+      <li><span class="ic fibra"></span><span data-t><b>Fibra</b> dá pontos, conforto e alarga a faixa verde.</span></li>
+      <li><span class="ic cafe"></span><span data-t><b>Café</b> é turbo. <span class="ic gas"></span> <b>Gás</b> te empurra.</span></li>
     </ul>
     <p class="small" id="card1World"></p>
     <p class="small" id="card1Boosts"></p>
@@ -74,10 +74,10 @@
     <h2>O Trono</h2>
     <p class="lead" id="c2lead"></p>
     <ul class="rules">
-      <li><span class="ic zona"></span><span>Segure <kbd>Espaço</kbd> (ou o mouse) pra fazer força. Fique na <b>faixa verde</b>.</span></li>
-      <li><span class="ic combo"></span><span>Cada segundo seguido na faixa sobe o <b>combo</b>. Pontos do trono = chance de <b>mutação</b>.</span></li>
+      <li><span class="ic zona"></span><span data-t>Segure <kbd>Espaço</kbd> (ou o mouse) pra fazer força. Fique na <b>faixa verde</b>.</span></li>
+      <li><span class="ic combo"></span><span data-t>Cada segundo seguido na faixa sobe o <b>combo</b>. Pontos do trono = chance de <b>mutação</b>.</span></li>
       <li><span class="ic porta"></span><span id="c2door"></span></li>
-      <li><span class="ic veia"></span><span>Força demais enche a <b>veia da testa</b>. Encheu, você desmaia.</span></li>
+      <li><span class="ic veia"></span><span data-t>Força demais enche a <b>veia da testa</b>. Encheu, você desmaia.</span></li>
     </ul>
     <button class="btn" id="go2">Sentar</button>
   </section>
@@ -86,8 +86,8 @@
     <p class="eyebrow" id="bcEyebrow"></p>
     <div class="bchead"><span id="bcPic"></span><div><h2 id="bcName"></h2><p class="lead" id="bcDesc"></p></div></div>
     <ul class="rules">
-      <li><span class="ic zona"></span><span>Fique na <b>faixa verde</b> pra causar dano. Combo e contração batem mais forte.</span></li>
-      <li><span class="ic combo"></span><span>Você tem <b>50 segundos</b>. Mais poder na equipe = mais dano.</span></li>
+      <li><span class="ic zona"></span><span data-t>Fique na <b>faixa verde</b> pra causar dano. Combo e contração batem mais forte.</span></li>
+      <li><span class="ic combo"></span><span data-t>Você tem <b>50 segundos</b>. Mais poder na equipe = mais dano.</span></li>
       <li><span class="ic porta"></span><span>A porta continua batendo. Se alguém entrar, você perde a luta.</span></li>
       <li><span class="ic veia"></span><span id="bcPower"></span></li>
     </ul>
@@ -157,7 +157,7 @@
 
   <section id="coll" class="panel" hidden aria-label="Coleção">
     <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Coleção</h3>
-      <div class="tabs" role="tablist"><button class="tab" data-tab="mine">Minhas Verities</button><button class="tab" data-tab="index">Índice de raridade</button></div>
+      <div class="tabs" role="tablist"><button class="tab" data-tab="mine">Minhas Verities</button><button class="tab" data-tab="index">Índice de raridade</button><button class="tab" data-tab="cuts">Cutscenes</button></div>
       <span class="wallet"></span></header>
     <div class="pbody split" data-pane="mine">
       <div class="pmain">
@@ -168,6 +168,7 @@
       <aside class="pside" id="collDetail"></aside>
     </div>
     <div class="pbody" data-pane="index" id="collIndex" hidden></div>
+    <div class="pbody" data-pane="cuts" id="collCuts" hidden></div>
   </section>
 
   <section id="shop" class="panel" hidden aria-label="Loja">
@@ -231,6 +232,8 @@
         <div class="row left"><button class="pick" id="voiceToggle"></button><button class="pick" id="muteToggle"></button></div>
       </div>
       <div class="col">
+        <p class="ptitle">Idioma · Language</p>
+        <div class="row left" id="langPick"><button class="pick" data-lang="pt" lang="pt-BR">Português</button><button class="pick" data-lang="en" lang="en">English</button></div>
         <p class="ptitle">Tela</p>
         <div class="row left"><button class="pick" id="fullToggle">Tela cheia</button><button class="pick" id="fullStart" hidden></button></div>
         <p class="ptitle">Conta</p>
@@ -251,6 +254,7 @@
   <button id="pauseBtn" class="mute" hidden>Pausa <kbd>P</kbd></button>
 </div>
 <script src="js/firebase-config.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/core.js"></script>
 <script src="js/art.js"></script>
 <script src="js/parts.js"></script>

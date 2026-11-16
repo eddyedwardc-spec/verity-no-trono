@@ -21,11 +21,11 @@ function drawAccExtra(a,V,x,y,r,t){
 }
 
 /* ---------- more cosmetics ---------- */
-Object.assign(COS.skin.items,{zumbi:{name:'Zumbi',price:4000,col:'#9fbf8a'},vampiro:{name:'Vampiro',price:4000,col:'#ece6f2'},roxa:{name:'Roxa',price:5000,col:'#b48ad8'}});
-Object.assign(COS.hair.items,{trancas:{name:'Tranças',price:2200},coque:{name:'Coque Samurai',price:2600},emo:{name:'Franja Emo',price:3000},afrorosa:{name:'Black Power Rosa',price:4500}});
-Object.assign(COS.hat.items,{chef:{name:'Chapéu de Chef',price:4000},pirata:{name:'Chapéu Pirata',price:7000},papai:{name:'Gorro de Natal',price:5000},chifres:{name:'Chifrinhos',price:8000},aureola:{name:'Auréola',price:15000},astronauta:{name:'Capacete Espacial',price:20000}});
-Object.assign(COS.glasses.items,{aviador:{name:'Aviador',price:2500},estrela:{name:'Estrela',price:3500},espiral:{name:'Hipnose',price:6000},laser:{name:'Visor Laser',price:12000}});
-Object.assign(COS.shirt.items,{pijama:{name:'Pijama',price:2500,base:'#7aa8e8',dark:'#4a78c8'},camuflado:{name:'Camuflado',price:5000,base:'#6a7a3a',dark:'#3e4a1e'},smoking:{name:'Smoking',price:12000,base:'#18181e',dark:'#0a0a0e'},super:{name:'Super Verity',price:18000,base:'#2a5ae0',dark:'#d42a2a'},astro:{name:'Traje Espacial',price:30000,base:'#eef2f6',dark:'#9aa8b8'}});
+Object.assign(COS.skin.items,{zumbi:{name:_t("Zumbi"),price:4000,col:'#9fbf8a'},vampiro:{name:_t("Vampiro"),price:4000,col:'#ece6f2'},roxa:{name:_t("Roxa"),price:5000,col:'#b48ad8'}});
+Object.assign(COS.hair.items,{trancas:{name:_t("Tranças"),price:2200},coque:{name:_t("Coque Samurai"),price:2600},emo:{name:_t("Franja Emo"),price:3000},afrorosa:{name:_t("Black Power Rosa"),price:4500}});
+Object.assign(COS.hat.items,{chef:{name:_t("Chapéu de Chef"),price:4000},pirata:{name:_t("Chapéu Pirata"),price:7000},papai:{name:_t("Gorro de Natal"),price:5000},chifres:{name:_t("Chifrinhos"),price:8000},aureola:{name:_t("Auréola"),price:15000},astronauta:{name:_t("Capacete Espacial"),price:20000}});
+Object.assign(COS.glasses.items,{aviador:{name:_t("Aviador"),price:2500},estrela:{name:_t("Estrela"),price:3500},espiral:{name:_t("Hipnose"),price:6000},laser:{name:_t("Visor Laser"),price:12000}});
+Object.assign(COS.shirt.items,{pijama:{name:_t("Pijama"),price:2500,base:'#7aa8e8',dark:'#4a78c8'},camuflado:{name:_t("Camuflado"),price:5000,base:'#6a7a3a',dark:'#3e4a1e'},smoking:{name:_t("Smoking"),price:12000,base:'#18181e',dark:'#0a0a0e'},super:{name:'Super Verity',price:18000,base:'#2a5ae0',dark:'#d42a2a'},astro:{name:_t("Traje Espacial"),price:30000,base:'#eef2f6',dark:'#9aa8b8'}});
 function drawHairBackExtra(kind){
   if(kind==='afrorosa'){circ(270,226,94,'#ff6fb8');return true}
   if(kind==='trancas'){for(const s of[-1,1]){for(let i=0;i<6;i++)ell(270+s*64,252+i*22,13,12,'#2b1d16');circ(270+s*64,390,7,'#ff4d6d')}return false}
@@ -69,12 +69,12 @@ function drawShirtExtra(kind,base,dark){
 
 /* ---------- more intruders ---------- */
 Object.assign(INTRUDERS,{
-  mae:{name:'Mãe',price:6000,knock:'Já tá aí faz meia hora!',enter:'CADÊ O MEU CHINELO?!'},
-  avo:{name:'Vó',price:7000,knock:'Netinho, a vó precisa usar!',enter:'AI MEU DEUS DO CÉU!'},
-  policial:{name:'Policial',price:10000,knock:'Polícia! Abra a porta!',enter:'PERDEU! MÃOS PRO ALTO!'},
-  palhaco:{name:'Palhaço',price:12000,knock:'Toc toc! Quem é?',enter:'HONK HONK! SURPRESA!'},
-  alien:{name:'Alienígena',price:25000,knock:'Bip bop... humano ocupado?',enter:'ABDUÇÃO INICIADA!'},
-  fantasma:{name:'Fantasma',price:30000,knock:'Uuuuuuuuh...',enter:'BUUUUUUU!'}
+  mae:{name:_t("Mãe"),price:6000,knock:_t("Já tá aí faz meia hora!"),enter:_t("CADÊ O MEU CHINELO?!")},
+  avo:{name:_t("Vó"),price:7000,knock:_t("Netinho, a vó precisa usar!"),enter:_t("AI MEU DEUS DO CÉU!")},
+  policial:{name:_t("Policial"),price:10000,knock:_t("Polícia! Abra a porta!"),enter:_t("PERDEU! MÃOS PRO ALTO!")},
+  palhaco:{name:_t("Palhaço"),price:12000,knock:_t("Toc toc! Quem é?"),enter:_t("HONK HONK! SURPRESA!")},
+  alien:{name:_t("Alienígena"),price:25000,knock:_t("Bip bop... humano ocupado?"),enter:_t("ABDUÇÃO INICIADA!")},
+  fantasma:{name:_t("Fantasma"),price:30000,knock:_t("Uuuuuuuuh..."),enter:_t("BUUUUUUU!")}
 });
 function drawIntruderExtra(kind,x,y,s){
   switch(kind){
@@ -107,12 +107,12 @@ function drawIntruderExtra(kind,x,y,s){
 
 /* ---------- more bathrooms (sequential tiers 9–14) ---------- */
 [
-  {name:'Navio Pirata',price:1500000,wall:'#5a3a20',grout:'#3a2410',floor:['#6a4a2a','#4a3018'],toilet:'#d9c9a8',decor:'pirata'},
-  {name:'Submarino',price:4000000,wall:'#1a3a4a',grout:'#0e2430',floor:['#2a4a5a','#1a3442'],toilet:'#dfe6f2',decor:'submarino'},
-  {name:'Castelo Medieval',price:10000000,wall:'#5a5a62',grout:'#3a3a40',floor:['#4a4a50','#38383e'],toilet:'#c9c9c0',decor:'castelo'},
-  {name:'Laboratório Secreto',price:25000000,wall:'#1e2a2a',grout:'#0e1818',floor:['#2a3a3a','#1a2828'],toilet:'#e6f2ee',decor:'lab'},
-  {name:'Templo Asteca',price:60000000,wall:'#8a6a3a',grout:'#5a4420',floor:['#6a5228','#4a3a1a'],toilet:'#f2c94c',decor:'templo'},
-  {name:'Dimensão do Papel',price:150000000,wall:'#f4f4f8',grout:'#d8d8e4',floor:['#ffffff','#e8e8f0'],toilet:'#ffffff',decor:'papel'}
+  {name:_t("Navio Pirata"),price:1500000,wall:'#5a3a20',grout:'#3a2410',floor:['#6a4a2a','#4a3018'],toilet:'#d9c9a8',decor:'pirata'},
+  {name:_t("Submarino"),price:4000000,wall:'#1a3a4a',grout:'#0e2430',floor:['#2a4a5a','#1a3442'],toilet:'#dfe6f2',decor:'submarino'},
+  {name:_t("Castelo Medieval"),price:10000000,wall:'#5a5a62',grout:'#3a3a40',floor:['#4a4a50','#38383e'],toilet:'#c9c9c0',decor:'castelo'},
+  {name:_t("Laboratório Secreto"),price:25000000,wall:'#1e2a2a',grout:'#0e1818',floor:['#2a3a3a','#1a2828'],toilet:'#e6f2ee',decor:'lab'},
+  {name:_t("Templo Asteca"),price:60000000,wall:'#8a6a3a',grout:'#5a4420',floor:['#6a5228','#4a3a1a'],toilet:'#f2c94c',decor:'templo'},
+  {name:_t("Dimensão do Papel"),price:150000000,wall:'#f4f4f8',grout:'#d8d8e4',floor:['#ffffff','#e8e8f0'],toilet:'#ffffff',decor:'papel'}
 ].forEach(b=>{const tier=BATHS.length+1;BATHS.push({...b,tier,luck:1+.2*Math.log2(tier)})});
 function drawDecorExtra(b,t){
   switch(b.decor){

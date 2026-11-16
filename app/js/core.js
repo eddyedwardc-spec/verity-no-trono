@@ -15,7 +15,7 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 const hexc=c=>{const n=parseInt(c.slice(1),16);return[n>>16&255,n>>8&255,n&255]};
 const mix=(a,b,t)=>{const A=hexc(a),B=hexc(b);t=clamp(t,0,1);return`rgb(${Math.round(lerp(A[0],B[0],t))},${Math.round(lerp(A[1],B[1],t))},${Math.round(lerp(A[2],B[2],t))})`};
 const shade=(c,k)=>k<0?mix(c,'#000000',-k):mix(c,'#ffffff',k);
-const fmt=n=>Math.round(n).toLocaleString('pt-BR');
+const fmt=n=>Math.round(n).toLocaleString(LOCALE);
 const money=n=>'V$ '+fmt(n);
 const rid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 function withCtx(c,fn){const o=ctx;ctx=c;try{fn()}finally{ctx=o}}
@@ -221,7 +221,14 @@ const KW_CH=[[60,64,67],[55,59,62],[57,60,64],[53,57,60]];
 const KW_MEL=[[[0,72],[2,76],[4,79],[6,76],[8,81],[10,79],[12,76],[14,74]],[[0,74],[2,79],[4,83],[6,79],[8,81],[12,79]],[[0,76],[2,72],[4,76],[6,81],[8,79],[10,76],[12,72],[14,74]],[[0,77],[2,76],[4,74],[6,72],[8,74],[12,76]]];
 const RK_R={A:[38,0,38,38,0,0,38,0,38,0,38,38,41,0,43,0],B:[38,0,38,38,0,0,38,0,46,0,45,0,43,0,41,0],C:[38,38,38,38,38,38,38,38,50,0,0,0,48,0,0,0]};
 const RK_SEQ=['A','B','A','C','A','B','A','C'],RK_BIG=[38,46,41,43];
-const HINO_LYRICS=[
+const HINO_LYRICS=LANG==='en'?[
+  ['intro',['One, two, three, four!']],
+  ['Verse 1',['I swallowed a yellow ball','And it smiled right back at me','It went through my intestine','Now it wants to be free!']],
+  ['Chorus',["Poop, poop, the Verity!","Push, push, till it's out!","Someone knocked: it's occupied!","Nobody's stopping me now!"]],
+  ['Verse 2',["Cramps and coffee, fiber, gas","My forehead vein is gonna blow","Combo, combo, green zone","Today I mutate, let's go!"]],
+  ['Bridge',['Bronze, gold, diamond, platinum','Galaxy, Hacker, Plineos, GOD!']],
+  ['Outro',['PLOFT!']]
+]:[
   ['intro',['Um, dois, três, quatro!']],
   ['Verso 1',['Engoli uma bola amarela','E ela sorriu pra mim','Atravessou o intestino','Agora chegou o fim!']],
   ['Refrão',['Caga, caga, a Verity!','Força, força, até sair!','Bateram na porta: tá ocupado!','Ninguém vai me impedir!']],
@@ -232,17 +239,17 @@ const HINO_LYRICS=[
 const HN_BARS=(()=>{
   const out=[],sec=(k,ch,lines)=>ch.forEach((c,i)=>out.push({k,ch:c,first:i===0,lyric:lines&&i%2===0?lines[i/2]:null}));
   const V=[40,47,49,45,40,47,49,45],C=[45,47,40,40,45,47,49,47];
-  sec('count',[40],['Um, dois, três, quatro!']); sec('intro',[40,40,47,45]);
+  sec('count',[40],HINO_LYRICS[0][1]); sec('intro',[40,40,47,45]);
   sec('verse',V,HINO_LYRICS[1][1]); sec('chorus',C,HINO_LYRICS[2][1]);
   sec('verse',V,HINO_LYRICS[3][1]); sec('chorus',C,HINO_LYRICS[2][1]);
   sec('bridge',[49,45,47,47],HINO_LYRICS[4][1]); sec('chorus',C,HINO_LYRICS[2][1]);
-  sec('end',[40,40],['PLOFT!']);
+  sec('end',[40,40],HINO_LYRICS[5][1]);
   return out;
 })();
 const HN_BRIDGE_END=HN_BARS.findIndex(x=>x.k==='bridge')+3;
 const HN_LEAD=[[[0,71],[2,71],[4,71],[6,71],[8,73],[10,71],[12,68],[14,64]],[[0,66],[2,68],[4,66],[6,64],[8,64,6]]];
 const TRACKS={
-  kawaii:{name:'Kawaii Fofinha',desc:'Sininhos, palminhas e muita fofura.',bpm:132,play(bar,s,t,sd){
+  kawaii:{name:_t("Kawaii Fofinha"),desc:_t("Sininhos, palminhas e muita fofura."),bpm:132,play(bar,s,t,sd){
     const ch=KW_CH[bar%4],sec=Math.floor(bar/4)%2,mel=KW_MEL[bar%4].find(n=>n[0]===s);
     if(s===0||s===8)DR.kick(t,.45); if(s===4||s===12)DR.clap(t,.16); if(s%2===0)DR.hat(t,.03);
     if(s===0||s===6||s===8||s===14)bass(t,ch[0]-24,sd*2,.15,'triangle');
@@ -251,7 +258,7 @@ const TRACKS={
     if(sec===1){bell(t,ch[s%3]+24,.16,.03);if(mel&&s%4===0)bell(t,mel[1],.5,.07)}
     if(s===12&&bar%2===1)[0,2,4,7,9].forEach((d,i)=>bell(t+i*sd*.5,84+d,.25,.03));
   }},
-  rock:{name:'Rock Pesadão',desc:'Afinação drop D, bumbo duplo e parede de guitarra.',bpm:92,play(bar,s,t,sd){
+  rock:{name:_t("Rock Pesadão"),desc:_t("Afinação drop D, bumbo duplo e parede de guitarra."),bpm:92,play(bar,s,t,sd){
     const b=bar%12;
     if(b<8){
       const r=RK_R[RK_SEQ[b]][s];
@@ -264,7 +271,7 @@ const TRACKS={
       if(b===11&&s>=12)DR.snare(t,.3+(s-12)*.08);
     }
   }},
-  hino:{name:'Hino da Verity',desc:'Punk rock original sobre cagar uma Verity. Com letra.',bpm:176,play(bar,s,t,sd){
+  hino:{name:_t("Hino da Verity"),desc:_t("Punk rock original sobre cagar uma Verity. Com letra."),bpm:176,play(bar,s,t,sd){
     const bi=bar%HN_BARS.length,B=HN_BARS[bi];
     if(s===0&&B.lyric)sing(B.lyric,t);
     if(B.k==='count'){if(s%4===0)DR.stick(t);return}
@@ -289,14 +296,14 @@ function sing(line,t){
     MUS.lyric=line; MUS.lyricAt=S.time;
     if((typeof CS!=='undefined'&&CS)||!SET.voice||AU.muted||SET.musicVol<=0||!('speechSynthesis' in window))return;
     try{
-      const u=new SpeechSynthesisUtterance(line); u.lang='pt-BR'; if(MUS.voice)u.voice=MUS.voice;
+      const u=new SpeechSynthesisUtterance(line); u.lang=LOCALE; if(MUS.voice)u.voice=MUS.voice;
       u.rate=1.3; u.pitch=.35; u.volume=clamp(SET.musicVol*1.8,0,1);
       speechSynthesis.cancel(); speechSynthesis.speak(u);
     }catch(e){}
   },Math.max(0,delay-60)));
   if(MUS.pending.length>40)MUS.pending=MUS.pending.slice(-20);
 }
-function pickVoice(){try{const vs=speechSynthesis.getVoices();MUS.voice=vs.find(v=>/pt-BR/i.test(v.lang)&&/daniel|antonio|male|masc/i.test(v.name))||vs.find(v=>/^pt/i.test(v.lang))||null}catch(e){}}
+function pickVoice(){try{const vs=speechSynthesis.getVoices();MUS.voice=LANG==='en'?(vs.find(v=>/en-US/i.test(v.lang)&&/david|mark|guy|male/i.test(v.name))||vs.find(v=>/en-US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null):(vs.find(v=>/pt-BR/i.test(v.lang)&&/daniel|antonio|male|masc/i.test(v.name))||vs.find(v=>/^pt/i.test(v.lang))||null)}catch(e){}}
 if('speechSynthesis' in window){pickVoice();try{speechSynthesis.addEventListener('voiceschanged',pickVoice)}catch(e){}}
 function musicTick(){
   const a=AU.ctx; if(!a||!MUS.track)return;

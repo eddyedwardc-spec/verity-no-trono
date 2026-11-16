@@ -9,66 +9,66 @@ const ease={out:t=>1-Math.pow(1-t,3),in:t=>t*t*t,io:t=>t<.5?4*t*t*t:1-Math.pow(-
 
 /* e = entrance, a = action, fx = ambience, line = what it says, p = voice pitch, c = smoke/portal colour */
 const CUT_SPECS={
-  verity:{e:'rise',a:'wave',fx:'sparkle',line:'Oi! Lembra de mim? Eu sou a original!',p:1.3},
-  larpity:{e:'jump',a:'dance',fx:'confetti',line:'Larp larp! Bora dançar!',p:1.5},
-  falsity:{e:'smoke',c:'#3a6aff',a:'laugh',fx:'dark',line:'Hehehe... nada do que você viu era verdade.',p:.8},
-  obesity:{e:'butt',a:'eat',fx:'none',line:'Nham! Tinha mais comida aí dentro?',p:.6},
-  lovity:{e:'grow',a:'hearts',fx:'hearts',line:'Awn! Eu te amo, dono!',p:1.7},
-  cruelty:{e:'burst',a:'laugh',fx:'embers',line:'Você vai sofrer... de dor de barriga!',p:.5},
-  moggity:{e:'jump',a:'stare',fx:'sparkle',line:'Nem precisei fazer força.',p:.7},
-  eclipse:{e:'dark',a:'menace',fx:'dark',line:'Eu sempre estive aqui dentro...',p:.3},
-  lord:{e:'beam',a:'crown',fx:'holy',line:'Curvem-se diante do Lorde!',p:.9},
-  exu:{e:'smoke',c:'#c81a1a',a:'greet',fx:'embers',line:'Salve, camarada! Laroyê!',p:.5},
-  azedity:{e:'rise',a:'shiver',fx:'none',line:'Azedo! Que azedo! Que azedo!',p:1.6},
-  gastrity:{e:'swim',a:'roar',fx:'bubbles',line:'BUUURP! Com licença.',p:.9},
-  dragonity:{e:'lava',a:'fire',fx:'embers',line:'Eu nasci no estômago de um dragão!',p:.6},
-  ratity:{e:'crawl',a:'eat',fx:'none',line:'Queijo? Tem queijo aí?',p:1.8,food:'cheese'},
-  lodity:{e:'rise',a:'sleep',fx:'slime',line:'Blub... me deixa dormir no lodo...',p:.5},
-  radiativity:{e:'teleport',a:'zap',fx:'slime',line:'Brilho no escuro! E na sua barriga também!',p:1.2,zc:'#8cff2a'},
-  picolity:{e:'fall',a:'dance',fx:'snow',line:'Tô derretendo de alegria!',p:1.6},
-  geladity:{e:'freeze',a:'shiver',fx:'snow',line:'Brrr... fecha essa tampa!',p:1.1},
-  yetity:{e:'freeze',a:'roar',fx:'snow',line:'ROAAAR! Quem me acordou?!',p:.4},
-  ardity:{e:'burst',a:'sweat',fx:'embers',line:'Tá ardendo! Tá ardendo! TÁ ARDENDO!',p:1.5},
-  pimentity:{e:'drill',a:'fire',fx:'embers',line:'Picante demais pra você!',p:1.2},
-  magmity:{e:'lava',a:'roar',fx:'embers',line:'Eu sou a lava do seu vulcão interior!',p:.5},
-  alienity:{e:'portal',c:'#6ee05a',a:'beep',fx:'stars',line:'Bip bop. Leve-me ao seu líder.',p:1.4},
-  astronauty:{e:'beam',a:'float',fx:'stars',line:'Houston, saí da privada!',p:1.1},
-  lunity:{e:'portal',c:'#c9c9ff',a:'orbit',fx:'stars',line:'A lua me trouxe até você...',p:.8},
-  bugity:{e:'teleport',a:'glitch',fx:'matrix',line:'Erro 404: privada não encontrada.',p:1.3},
-  robotity:{e:'drill',a:'beep',fx:'sparkle',line:'Sistema ligado. Cagada concluída.',p:.7},
-  matrixity:{e:'teleport',a:'laser',fx:'matrix',line:'Você tomou a pílula marrom.',p:.5},
-  anjity:{e:'beam',a:'float',fx:'holy',line:'Paz, amor... e papel higiênico.',p:1.6},
-  zeusity:{e:'beam',a:'zap',fx:'rain',line:'Eu sou o deus do trovão... e do trono!',p:.4,zc:'#ffe23a'},
-  divinity:{e:'beam',a:'float',fx:'holy',line:'Contemple a perfeição.',p:1.0},
-  feijonity:{e:'rise',a:'eat',fx:'smoke',line:'Feijão com arroz, minha vida!',p:1.0,food:'beans'},
-  gasosity:{e:'smoke',c:'#c8e040',a:'laugh',fx:'smoke',line:'Pfffrrrt! Desculpa, fui eu.',p:1.2},
-  pantanity:{e:'swim',a:'roar',fx:'slime',line:'O pântano me chamou de volta.',p:.5},
-  chocolity:{e:'rise',a:'eat',fx:'sparkle',line:'Sou doce. Não pergunta de onde eu vim.',p:1.5,food:'choc'},
-  brigadeity:{e:'jump',a:'party',fx:'confetti',line:'Tem festa? Eu sou o brigadeiro!',p:1.5},
-  trufity:{e:'grow',a:'crown',fx:'sparkle',line:'Trufada, refinada, e saí de você.',p:.8},
-  faiscity:{e:'teleport',a:'zap',fx:'sparkle',line:'Bzzzt! Tô carregada!',p:1.7,zc:'#fff23a'},
-  voltity:{e:'drill',a:'zap',fx:'rain',line:'Duzentos e vinte volts de pura Verity!',p:.9,zc:'#30e0ff'},
-  trovity:{e:'beam',a:'zap',fx:'rain',line:'Ouviu esse trovão? Fui eu!',p:.4,zc:'#9a9aff'},
-  abismity:{e:'portal',c:'#5a2ab8',a:'menace',fx:'dark',line:'Olhe para o abismo...',p:.4},
-  vazity:{e:'dark',a:'menace',fx:'dark',line:'Nada. Só nada.',p:.25},
-  infinity:{e:'portal',c:'#c8a8ff',a:'orbit',fx:'holy',line:'Eu não tenho começo nem fim.',p:.9},
-  rolhity:{e:'burst',a:'spin',fx:'confetti',line:'POC! Finalmente desentupiu!',p:1.0},
-  aziaty:{e:'lava',a:'fire',fx:'embers',line:'Queimação total!',p:.6},
-  mutanty:{e:'rise',a:'laugh',fx:'slime',line:'Três olhos pra te vigiar!',p:.7},
-  icebergity:{e:'freeze',a:'stare',fx:'snow',line:'Eu era só a pontinha...',p:.6},
-  reipimentity:{e:'lava',a:'crown',fx:'embers',line:'Ajoelhem para o rei mais ardido!',p:.5},
-  polvity:{e:'swim',a:'dance',fx:'bubbles',line:'Oito braços pra te abraçar!',p:1.2},
-  virusity:{e:'teleport',a:'glitch',fx:'matrix',line:'Seu intestino foi hackeado.',p:.5},
-  entupity:{e:'burst',a:'roar',fx:'holy',line:'EU SOU O GRANDE ENTUPIMENTO!',p:.3},
-  reifeijity:{e:'rise',a:'crown',fx:'smoke',line:'O rei do feijão chegou!',p:.6},
-  baronity:{e:'grow',a:'stare',fx:'sparkle',line:'Encantado. Barão do Cacau, às ordens.',p:.7},
-  choquity:{e:'burst',a:'zap',fx:'rain',line:'CHOQUE DE REALIDADE!',p:.8,zc:'#ffe020'},
-  nadity:{e:'dark',a:'menace',fx:'dark',line:'Eu sou o que sobra quando nada sobra.',p:.3},
-  festivity:{e:'jump',a:'party',fx:'confetti',line:'É festa! O Mundo Vivo chegou!',p:1.6},
-  abobority:{e:'smoke',c:'#ff8a10',a:'laugh',fx:'embers',line:'Doces ou travessuras? Travessuras!',p:.7},
-  papaiverity:{e:'fall',a:'wave',fx:'snow',line:'Ho ho ho! Feliz Natal no trono!',p:.6},
-  carnavality:{e:'jump',a:'dance',fx:'confetti',line:'Ô abre alas que eu quero passar!',p:1.4},
-  caipirity:{e:'rise',a:'dance',fx:'confetti',line:'Arraiá do trono, sô!',p:1.2}
+  verity:{e:'rise',a:'wave',fx:'sparkle',line:_t("Oi! Lembra de mim? Eu sou a original!"),p:1.3},
+  larpity:{e:'jump',a:'dance',fx:'confetti',line:_t("Larp larp! Bora dançar!"),p:1.5},
+  falsity:{e:'smoke',c:'#3a6aff',a:'laugh',fx:'dark',line:_t("Hehehe... nada do que você viu era verdade."),p:.8},
+  obesity:{e:'butt',a:'eat',fx:'none',line:_t("Nham! Tinha mais comida aí dentro?"),p:.6},
+  lovity:{e:'grow',a:'hearts',fx:'hearts',line:_t("Awn! Eu te amo, dono!"),p:1.7},
+  cruelty:{e:'burst',a:'laugh',fx:'embers',line:_t("Você vai sofrer... de dor de barriga!"),p:.5},
+  moggity:{e:'jump',a:'stare',fx:'sparkle',line:_t("Nem precisei fazer força."),p:.7},
+  eclipse:{e:'dark',a:'menace',fx:'dark',line:_t("Eu sempre estive aqui dentro..."),p:.3},
+  lord:{e:'beam',a:'crown',fx:'holy',line:_t("Curvem-se diante do Lorde!"),p:.9},
+  exu:{e:'smoke',c:'#c81a1a',a:'greet',fx:'embers',line:_t("Salve, camarada! Laroyê!"),p:.5},
+  azedity:{e:'rise',a:'shiver',fx:'none',line:_t("Azedo! Que azedo! Que azedo!"),p:1.6},
+  gastrity:{e:'swim',a:'roar',fx:'bubbles',line:_t("BUUURP! Com licença."),p:.9},
+  dragonity:{e:'lava',a:'fire',fx:'embers',line:_t("Eu nasci no estômago de um dragão!"),p:.6},
+  ratity:{e:'crawl',a:'eat',fx:'none',line:_t("Queijo? Tem queijo aí?"),p:1.8,food:'cheese'},
+  lodity:{e:'rise',a:'sleep',fx:'slime',line:_t("Blub... me deixa dormir no lodo..."),p:.5},
+  radiativity:{e:'teleport',a:'zap',fx:'slime',line:_t("Brilho no escuro! E na sua barriga também!"),p:1.2,zc:'#8cff2a'},
+  picolity:{e:'fall',a:'dance',fx:'snow',line:_t("Tô derretendo de alegria!"),p:1.6},
+  geladity:{e:'freeze',a:'shiver',fx:'snow',line:_t("Brrr... fecha essa tampa!"),p:1.1},
+  yetity:{e:'freeze',a:'roar',fx:'snow',line:_t("ROAAAR! Quem me acordou?!"),p:.4},
+  ardity:{e:'burst',a:'sweat',fx:'embers',line:_t("Tá ardendo! Tá ardendo! TÁ ARDENDO!"),p:1.5},
+  pimentity:{e:'drill',a:'fire',fx:'embers',line:_t("Picante demais pra você!"),p:1.2},
+  magmity:{e:'lava',a:'roar',fx:'embers',line:_t("Eu sou a lava do seu vulcão interior!"),p:.5},
+  alienity:{e:'portal',c:'#6ee05a',a:'beep',fx:'stars',line:_t("Bip bop. Leve-me ao seu líder."),p:1.4},
+  astronauty:{e:'beam',a:'float',fx:'stars',line:_t("Houston, saí da privada!"),p:1.1},
+  lunity:{e:'portal',c:'#c9c9ff',a:'orbit',fx:'stars',line:_t("A lua me trouxe até você..."),p:.8},
+  bugity:{e:'teleport',a:'glitch',fx:'matrix',line:_t("Erro 404: privada não encontrada."),p:1.3},
+  robotity:{e:'drill',a:'beep',fx:'sparkle',line:_t("Sistema ligado. Cagada concluída."),p:.7},
+  matrixity:{e:'teleport',a:'laser',fx:'matrix',line:_t("Você tomou a pílula marrom."),p:.5},
+  anjity:{e:'beam',a:'float',fx:'holy',line:_t("Paz, amor... e papel higiênico."),p:1.6},
+  zeusity:{e:'beam',a:'zap',fx:'rain',line:_t("Eu sou o deus do trovão... e do trono!"),p:.4,zc:'#ffe23a'},
+  divinity:{e:'beam',a:'float',fx:'holy',line:_t("Contemple a perfeição."),p:1.0},
+  feijonity:{e:'rise',a:'eat',fx:'smoke',line:_t("Feijão com arroz, minha vida!"),p:1.0,food:'beans'},
+  gasosity:{e:'smoke',c:'#c8e040',a:'laugh',fx:'smoke',line:_t("Pfffrrrt! Desculpa, fui eu."),p:1.2},
+  pantanity:{e:'swim',a:'roar',fx:'slime',line:_t("O pântano me chamou de volta."),p:.5},
+  chocolity:{e:'rise',a:'eat',fx:'sparkle',line:_t("Sou doce. Não pergunta de onde eu vim."),p:1.5,food:'choc'},
+  brigadeity:{e:'jump',a:'party',fx:'confetti',line:_t("Tem festa? Eu sou o brigadeiro!"),p:1.5},
+  trufity:{e:'grow',a:'crown',fx:'sparkle',line:_t("Trufada, refinada, e saí de você."),p:.8},
+  faiscity:{e:'teleport',a:'zap',fx:'sparkle',line:_t("Bzzzt! Tô carregada!"),p:1.7,zc:'#fff23a'},
+  voltity:{e:'drill',a:'zap',fx:'rain',line:_t("Duzentos e vinte volts de pura Verity!"),p:.9,zc:'#30e0ff'},
+  trovity:{e:'beam',a:'zap',fx:'rain',line:_t("Ouviu esse trovão? Fui eu!"),p:.4,zc:'#9a9aff'},
+  abismity:{e:'portal',c:'#5a2ab8',a:'menace',fx:'dark',line:_t("Olhe para o abismo..."),p:.4},
+  vazity:{e:'dark',a:'menace',fx:'dark',line:_t("Nada. Só nada."),p:.25},
+  infinity:{e:'portal',c:'#c8a8ff',a:'orbit',fx:'holy',line:_t("Eu não tenho começo nem fim."),p:.9},
+  rolhity:{e:'burst',a:'spin',fx:'confetti',line:_t("POC! Finalmente desentupiu!"),p:1.0},
+  aziaty:{e:'lava',a:'fire',fx:'embers',line:_t("Queimação total!"),p:.6},
+  mutanty:{e:'rise',a:'laugh',fx:'slime',line:_t("Três olhos pra te vigiar!"),p:.7},
+  icebergity:{e:'freeze',a:'stare',fx:'snow',line:_t("Eu era só a pontinha..."),p:.6},
+  reipimentity:{e:'lava',a:'crown',fx:'embers',line:_t("Ajoelhem para o rei mais ardido!"),p:.5},
+  polvity:{e:'swim',a:'dance',fx:'bubbles',line:_t("Oito braços pra te abraçar!"),p:1.2},
+  virusity:{e:'teleport',a:'glitch',fx:'matrix',line:_t("Seu intestino foi hackeado."),p:.5},
+  entupity:{e:'burst',a:'roar',fx:'holy',line:_t("EU SOU O GRANDE ENTUPIMENTO!"),p:.3},
+  reifeijity:{e:'rise',a:'crown',fx:'smoke',line:_t("O rei do feijão chegou!"),p:.6},
+  baronity:{e:'grow',a:'stare',fx:'sparkle',line:_t("Encantado. Barão do Cacau, às ordens."),p:.7},
+  choquity:{e:'burst',a:'zap',fx:'rain',line:_t("CHOQUE DE REALIDADE!"),p:.8,zc:'#ffe020'},
+  nadity:{e:'dark',a:'menace',fx:'dark',line:_t("Eu sou o que sobra quando nada sobra."),p:.3},
+  festivity:{e:'jump',a:'party',fx:'confetti',line:_t("É festa! O Mundo Vivo chegou!"),p:1.6},
+  abobority:{e:'smoke',c:'#ff8a10',a:'laugh',fx:'embers',line:_t("Doces ou travessuras? Travessuras!"),p:.7},
+  papaiverity:{e:'fall',a:'wave',fx:'snow',line:_t("Ho ho ho! Feliz Natal no trono!"),p:.6},
+  carnavality:{e:'jump',a:'dance',fx:'confetti',line:_t("Ô abre alas que eu quero passar!"),p:1.4},
+  caipirity:{e:'rise',a:'dance',fx:'confetti',line:_t("Arraiá do trono, sô!"),p:1.2}
 };
 
 /* ---------- sounds just for scenes ---------- */
@@ -86,11 +86,11 @@ const CSFX={
   crack(){noise({dur:.3,vol:.5,f:2500,q:1.5})}
 };
 let CS=null;
-function startCutscene(vk,mk,f,after){
+function startCutscene(vk,mk,f,after,replay){
   const V=VARS[vk]; if(!V)return after&&after();
   const spec=CUT_SPECS[vk]||{e:'rise',a:'wave',fx:'sparkle',line:V.name+'!',p:1};
-  CS={vk,mk:mk||'none',f:f||0,t:0,spec,after,once:{},shake:0,flash:0,zoom:1,said:false,pose:{x:CX,y:RY+140,s:1,rot:0,sq:1,a:0,inBowl:true},props:[]};
-  if(!P.seen.includes(vk)){P.seen.push(vk);saveProfile()}
+  CS={vk,mk:mk||'none',f:f||0,t:0,spec,after,replay:!!replay,once:{},shake:0,flash:0,zoom:1,said:false,pose:{x:CX,y:RY+140,s:1,rot:0,sq:1,a:0,inBowl:true},props:[]};
+  if(!replay&&!P.seen.includes(vk)){P.seen.push(vk);saveProfile()}
   stopGrunt(); $('knockBtn').hidden=true; $('pauseBtn').hidden=true; $('results').hidden=true; showOnly(null);
   S.parts=[]; S.floats=[]; S.mode='cut';
   if(MUS.bus&&AU.ctx)MUS.bus.gain.setTargetAtTime(AU.muted?0:SET.musicVol*.3,AU.ctx.currentTime,.2);
@@ -101,7 +101,7 @@ function endCutscene(){const a=CS&&CS.after;CS=null;S.parts=[];S.floats=[];try{s
 function cOnce(k,fn){if(!CS.once[k]){CS.once[k]=1;fn()}}
 function speakLine(line,pitch){
   if(!SET.voice||AU.muted||!('speechSynthesis' in window))return;
-  try{const u=new SpeechSynthesisUtterance(line);u.lang='pt-BR';if(MUS.voice)u.voice=MUS.voice;u.pitch=clamp(pitch||1,.1,2);u.rate=1.05;u.volume=clamp(SET.sfxVol*1.6,0,1);speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}
+  try{const u=new SpeechSynthesisUtterance(line);u.lang=LOCALE;if(MUS.voice)u.voice=MUS.voice;u.pitch=clamp(pitch||1,.1,2);u.rate=1.05;u.volume=clamp(SET.sfxVol*1.6,0,1);speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}
 }
 
 /* ---------- entrances: p goes 0→1 between CUT_T.ent and CUT_T.act ---------- */
@@ -158,7 +158,7 @@ const ENT={
   butt(p,C){
     C.butt=p;
     if(p<.3){C.shake=4+p*30;cOnce('a',()=>{CSFX.rumble();sfx.fart()});return cPose({a:0})}
-    if(p<.55){cOnce('o',()=>{sfx.slam();C.shake=22;float('AI!',CX-260,170,{size:60,col:'#ff4d5e',life:1.2});
+    if(p<.55){cOnce('o',()=>{sfx.slam();C.shake=22;float(_t("AI!"),CX-260,170,{size:60,col:'#ff4d5e',life:1.2});
       for(let i=0;i<14;i++)burst(CX+rand(-30,30),250,'#d42a2a',1,{angle:rand(-Math.PI*.95,-Math.PI*.05)+Math.PI,spread:.3,spd:rand(250,520),grav:900,shape:'drop',size:rand(4,8),life:1.1})});
       const u=(p-.3)/.25;return cPose({y:lerp(150,240,u),s:.8,sq:1+.25*Math.sin(u*Math.PI),a:1,eating:true})}
     if(p<.8){const u=(p-.55)/.25;cOnce('d',()=>CSFX.whoosh());return cPose({y:lerp(240,RY+80,ease.in(u)),rot:u*1.2,s:.9,inBowl:u>.8,eating:true})}
@@ -171,12 +171,12 @@ const ACT={
   wave(q,C,P0){P0.y+=Math.sin(q*TAU*2)*8;P0.hand=Math.sin(q*TAU*4);return P0},
   greet(q,C,P0){const b=Math.max(0,Math.sin(q*Math.PI*2));P0.rot=b*.38;P0.hat=b;P0.noHat=true;cOnce('g',()=>CSFX.horn());return P0},
   eat(q,C,P0){const ch=Math.abs(Math.sin(q*TAU*3));P0.sq=1-ch*.12;P0.food=C.spec.food||'burger';P0.bite=Math.floor(q*6);
-    if(Math.floor(q*6)!==C.lastBite){C.lastBite=Math.floor(q*6);CSFX.chomp();burst(CX+110,OUTY+20,['#c8903a','#7ad02a','#e8231a'],6,{spd:200,grav:600,size:4,life:.8});if(C.lastBite%2)float('NHAM!',CX+rand(150,260),OUTY-rand(40,120),{size:34,col:'#ffd23a',life:.8})}
+    if(Math.floor(q*6)!==C.lastBite){C.lastBite=Math.floor(q*6);CSFX.chomp();burst(CX+110,OUTY+20,['#c8903a','#7ad02a','#e8231a'],6,{spd:200,grav:600,size:4,life:.8});if(C.lastBite%2)float(_t("NHAM!"),CX+rand(150,260),OUTY-rand(40,120),{size:34,col:'#ffd23a',life:.8})}
     return P0},
   dance(q,C,P0){P0.x+=Math.sin(q*TAU*3)*60;P0.rot=Math.sin(q*TAU*3)*.25;P0.y+=-Math.abs(Math.sin(q*TAU*6))*30;C.disco=1;
     if(Math.random()<.15)burst(CX+rand(-260,260),OUTY-rand(0,120),['#ffd23a','#ff4fd0','#3ad4ff'],1,{angle:-Math.PI/2,spread:.4,spd:90,shape:'note',size:12,life:1.4,drag:.5});return P0},
   laugh(q,C,P0){P0.x+=(Math.random()-.5)*10;P0.rot=Math.sin(q*TAU*8)*.08;
-    if(Math.floor(q*5)!==C.lastHa){C.lastHa=Math.floor(q*5);float(pick(['HA HA HA!','HAHAHA!','HUE HUE!']),CX+rand(-260,260),OUTY-rand(60,180),{size:44,col:'#ff4d5e',life:.9})}
+    if(Math.floor(q*5)!==C.lastHa){C.lastHa=Math.floor(q*5);float(pick(['HA HA HA!','HAHAHA!',_t("HUE HUE!")]),CX+rand(-260,260),OUTY-rand(60,180),{size:44,col:'#ff4d5e',life:.9})}
     if(q>.3)cOnce('fl',()=>{C.flash=.5;CSFX.zap()});return P0},
   hearts(q,C,P0){P0.s=1+Math.sin(q*TAU*3)*.05;if(Math.random()<.35)burst(CX+rand(-120,120),OUTY,'#ff5a9a',1,{angle:-Math.PI/2,spread:.6,spd:120,shape:'heart',size:16,life:1.6,drag:.4});return P0},
   stare(q,C,P0){C.zoom=1+ease.io(q)*.28;if(q>.5)cOnce('m',()=>{float('*mog*',CX+150,OUTY-110,{size:40,col:'#ffd23a',life:1.6,vy:-10});CSFX.magic()});P0.shine=q;return P0},
@@ -193,7 +193,7 @@ const ACT={
   sweat(q,C,P0){P0.x+=(Math.random()-.5)*6;if(Math.random()<.25)burst(CX+rand(-80,80),OUTY-60,'#bfe8ff',1,{angle:rand(-2.6,-.5),spread:.2,spd:200,grav:700,shape:'drop',size:5,life:1});return P0},
   float(q,C,P0){P0.y+=Math.sin(q*TAU*1.5)*18-10;C.beam=Math.max(C.beam||0,.6);if(Math.random()<.2)burst(CX+rand(-150,150),OUTY+rand(-100,100),'#fff3a0',1,{spd:30,shape:'star',size:6,life:1});return P0},
   orbit(q,C,P0){P0.orbit=q;return P0},
-  beep(q,C,P0){if(Math.floor(q*6)!==C.lastBeep){C.lastBeep=Math.floor(q*6);CSFX.beep();float(C.lastBeep%2?'BIP':'BOP',CX+rand(-200,200),OUTY-rand(80,160),{size:36,col:'#7af0ff',life:.7})}P0.y+=Math.sin(q*TAU*3)*6;return P0},
+  beep(q,C,P0){if(Math.floor(q*6)!==C.lastBeep){C.lastBeep=Math.floor(q*6);CSFX.beep();float(C.lastBeep%2?_t("BIP"):_t("BOP"),CX+rand(-200,200),OUTY-rand(80,160),{size:36,col:'#7af0ff',life:.7})}P0.y+=Math.sin(q*TAU*3)*6;return P0},
   party(q,C,P0){P0.y-=Math.abs(Math.sin(q*TAU*3))*40;cOnce('p',()=>{CSFX.horn();burst(CX,OUTY,['#ff4d6d','#ffd23a','#4dff88','#3ad4ff','#c08bff'],70,{spd:600,size:7,life:1.6,grav:500,shape:'rect'})});return P0}
 };
 
@@ -283,7 +283,7 @@ function drawButt(C){
   for(const s of[-1,1]){const g=ctx.createRadialGradient(CX+s*(150+open)-40,-20,20,CX+s*(150+open),40,260);g.addColorStop(0,shade(skin,.15));g.addColorStop(1,shade(skin,-.15));ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(CX+s*(150+open),40,250,230,0,0,TAU);ctx.fill()}
   if(open>4){ctx.fillStyle='#3a0a0a';ctx.beginPath();ctx.ellipse(CX,200,open*.9,22+open*.2,0,0,TAU);ctx.fill();for(let i=0;i<4;i++)ell(CX-open*.5+i*open*.33,210+(i%2)*6,6,10,'#c41a1a')}
   ctx.strokeStyle='rgba(120,60,40,.45)';ctx.lineWidth=5;for(const s of[-1,1]){ctx.beginPath();ctx.arc(CX+s*(150+open),40,235,s<0?.15:Math.PI-.75,s<0?.75:Math.PI-.15);ctx.stroke()}
-  if(p<.55)txt(p<.3?'*força*':'SPLURT!',CX,330,p<.3?30:54,p<.3?'#ffffff':'#ff4d5e');
+  if(p<.55)txt(p<.3?_t("*força*"):'SPLURT!',CX,330,p<.3?30:54,p<.3?'#ffffff':'#ff4d5e');
   ctx.restore();
 }
 function drawCut(){
@@ -331,7 +331,7 @@ function drawCut(){
     const y0=478;ctx.save();ctx.translate((1-k)*-W,0);
     const gb=ctx.createLinearGradient(0,y0,W,y0);gb.addColorStop(0,'rgba(8,24,21,.95)');gb.addColorStop(.5,shade(R.col,-.55));gb.addColorStop(1,'rgba(8,24,21,.95)');
     ctx.fillStyle=gb;ctx.fillRect(0,y0,W,172);ctx.fillStyle=R.col;ctx.fillRect(0,y0,W,5);ctx.fillRect(0,y0+167,W,5);
-    txt(C.replay?'CUTSCENE':'NOVA VERITY!',W/2,y0+28,20,'#86e0c8',{font:'b'});
+    txt(C.replay?_t("CUTSCENE"):_t("NOVA VERITY!"),W/2,y0+28,20,'#86e0c8',{font:'b'});
     txt(fullName(C.vk,C.mk,C.f),W/2,y0+76,64,C.f?FUSE[C.f].col:C.mk!=='none'?M.col:R.col);
     txt(`${R.name} ${stars(V.r)}`+(V.abil?'  ·  '+abilText(V.abil):''),W/2,y0+128,20,'#ffffff',{font:'b'});
     ctx.restore();
@@ -339,7 +339,7 @@ function drawCut(){
   // letterbox
   const lb=70*Math.min(ease.out(clamp(t/.4,0,1)),1-ease.in(clamp((t-(CUT_T.end-.35))/.35,0,1)));
   ctx.fillStyle='#000';ctx.fillRect(0,0,W,lb);ctx.fillRect(0,H-lb,W,lb);
-  if(lb>40)txt('clique pra pular',W-24,H-lb/2,14,'rgba(255,255,255,.6)',{align:'right',font:'b',stroke:false});
+  if(lb>40)txt(_t("clique pra pular"),W-24,H-lb/2,14,'rgba(255,255,255,.6)',{align:'right',font:'b',stroke:false});
 }
 
 /* ======================= marmita roulette ======================= */
@@ -376,7 +376,7 @@ function drawGacha(){
       drawVariant(x,384,36+near*8,G.reel[i],i===28&&G.done?G.item.m:'none',{glow:.4,badge:false,t:1})}
     ctx.restore();poly([[CX-14,292],[CX+14,292],[CX,312]],'#ffd23a');poly([[CX-14,468],[CX+14,468],[CX,448]],'#ffd23a');
   }
-  if(G.done){const V=VARS[G.item.v],R=RAR[V.r];txt(fullName(G.item.v,G.item.m),CX,540,52,G.item.m!=='none'?MUT_BY[G.item.m].col:R.col);txt(`${R.name} ${stars(V.r)}`+(G.isNew?' · NOVA!':''),CX,590,22,'#ffffff',{font:'b'})}
+  if(G.done){const V=VARS[G.item.v],R=RAR[V.r];txt(fullName(G.item.v,G.item.m),CX,540,52,G.item.m!=='none'?MUT_BY[G.item.m].col:R.col);txt(`${R.name} ${stars(V.r)}`+(G.isNew?_t(" · NOVA!"):''),CX,590,22,'#ffffff',{font:'b'})}
   drawFx();
 }
 function cOnce2(o,k,fn){o.once=o.once||{};if(!o.once[k]){o.once[k]=1;fn()}}

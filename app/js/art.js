@@ -1,32 +1,32 @@
 'use strict';
 /* ===== art: Verities, rarity, mutations, the player character, cosmetics, intruders, bathrooms ===== */
 const RAR=[
-  {k:'comum',name:'Comum',col:'#b9c4c1'},
-  {k:'incomum',name:'Incomum',col:'#6fe08a'},
-  {k:'raro',name:'Raro',col:'#5fb4ff'},
-  {k:'epico',name:'Épico',col:'#c08bff'},
-  {k:'lendario',name:'Lendário',col:'#ffb23a'},
-  {k:'mitico',name:'Mítico',col:'#ff5a5f'}
+  {k:'comum',name:_t("Comum"),col:'#b9c4c1'},
+  {k:'incomum',name:_t("Incomum"),col:'#6fe08a'},
+  {k:'raro',name:_t("Raro"),col:'#5fb4ff'},
+  {k:'epico',name:_t("Épico"),col:'#c08bff'},
+  {k:'lendario',name:_t("Lendário"),col:'#ffb23a'},
+  {k:'mitico',name:_t("Mítico"),col:'#ff5a5f'}
 ];
 const VARS={
-  verity:{name:'Verity',base:100,r:0,col:['#fff8c4','#ffd726','#d69500'],glow:'255,226,80',hint:'conforto 40–79'},
-  larpity:{name:'Larpity',base:120,r:0,col:['#d9ffbf','#47f20d','#1f9a00'],glow:'110,255,60',hint:'conforto 60–94'},
-  falsity:{name:'Falsity',base:150,r:1,col:['#a8bdff','#1446e0','#0a2590'],glow:'60,110,255',hint:'conforto 20–59'},
-  obesity:{name:'Obesity',base:200,r:1,col:['#fff3b0','#f5cf3a','#c89a10'],glow:'255,220,90',hint:'conforto 40–79'},
-  lovity:{name:'Lovity',base:250,r:2,col:['#ffe4ef','#f79ac2','#cf618e'],glow:'255,150,200',hint:'conforto 80–94'},
-  cruelty:{name:'Cruelty',base:300,r:2,col:['#ffa0a0','#ee1111','#930000'],glow:'255,40,40',hint:'conforto abaixo de 40'},
-  moggity:{name:'Moggity',base:600,r:3,col:['#ffe08a','#f0a91c','#a86200'],glow:'255,170,40',hint:'conforto 80+'},
-  eclipse:{name:'Eclipse',base:800,r:3,col:['#3b3648','#121018','#000000'],glow:'120,80,200',hint:'conforto abaixo de 20'},
-  lord:{name:'Lord Verity',base:1500,r:4,col:['#fff8c4','#ffd726','#d69500'],glow:'255,226,80',hint:'conforto 95+'},
-  exu:{name:'Exu',base:3000,r:5,col:['#ad7a58','#6b4530','#2c190e'],glow:'255,80,70',hint:'conforto 95+ (100% ajuda)'}
+  verity:{name:'Verity',base:100,r:0,col:['#fff8c4','#ffd726','#d69500'],glow:'255,226,80',hint:_t("conforto 40–79")},
+  larpity:{name:'Larpity',base:120,r:0,col:['#d9ffbf','#47f20d','#1f9a00'],glow:'110,255,60',hint:_t("conforto 60–94")},
+  falsity:{name:'Falsity',base:150,r:1,col:['#a8bdff','#1446e0','#0a2590'],glow:'60,110,255',hint:_t("conforto 20–59")},
+  obesity:{name:'Obesity',base:200,r:1,col:['#fff3b0','#f5cf3a','#c89a10'],glow:'255,220,90',hint:_t("conforto 40–79")},
+  lovity:{name:'Lovity',base:250,r:2,col:['#ffe4ef','#f79ac2','#cf618e'],glow:'255,150,200',hint:_t("conforto 80–94")},
+  cruelty:{name:'Cruelty',base:300,r:2,col:['#ffa0a0','#ee1111','#930000'],glow:'255,40,40',hint:_t("conforto abaixo de 40")},
+  moggity:{name:'Moggity',base:600,r:3,col:['#ffe08a','#f0a91c','#a86200'],glow:'255,170,40',hint:_t("conforto 80+")},
+  eclipse:{name:'Eclipse',base:800,r:3,col:['#3b3648','#121018','#000000'],glow:'120,80,200',hint:_t("conforto abaixo de 20")},
+  lord:{name:'Lord Verity',base:1500,r:4,col:['#fff8c4','#ffd726','#d69500'],glow:'255,226,80',hint:_t("conforto 95+")},
+  exu:{name:'Exu',base:3000,r:5,col:['#ad7a58','#6b4530','#2c190e'],glow:'255,80,70',hint:_t("conforto 95+ (100% ajuda)")}
 };
 const VAR_ORDER=['verity','larpity','falsity','obesity','lovity','cruelty','moggity','eclipse','lord','exu'];
 const MUTS=[
-  {k:'none',name:'Comum',mult:1,col:'#cfd6d4'},
+  {k:'none',name:_t("Comum"),mult:1,col:'#cfd6d4'},
   {k:'bronze',name:'Bronze',mult:2,col:'#e09a5a',p:.30,min:0},
-  {k:'ouro',name:'Ouro',mult:4,col:'#ffd23a',p:.15,min:0},
-  {k:'diamante',name:'Diamante',mult:8,col:'#86ecff',p:.07,min:300},
-  {k:'platina',name:'Platina',mult:15,col:'#eef3fa',p:.035,min:450},
+  {k:'ouro',name:_t("Ouro"),mult:4,col:'#ffd23a',p:.15,min:0},
+  {k:'diamante',name:_t("Diamante"),mult:8,col:'#86ecff',p:.07,min:300},
+  {k:'platina',name:_t("Platina"),mult:15,col:'#eef3fa',p:.035,min:450},
   {k:'galaxy',name:'Galaxy',mult:30,col:'#c39bff',p:.015,min:600},
   {k:'hacker',name:'Hacker',mult:60,col:'#39ff7a',p:.006,min:800},
   {k:'plineos',name:'Plineos',mult:120,col:'#ff7ad9',p:.002,min:1000},
@@ -264,7 +264,7 @@ function drawVariant(x,y,r,vk,mk,o={}){
   if(fx&&o.f)drawFusion(x,y,r,o.f,t);
   if(o.lvl>1&&r>=14&&o.badge!==false){
     rr(x+r*.35,y+r*.55,r*.9,r*.42,r*.2);ctx.fillStyle='rgba(10,24,22,.85)';ctx.fill();
-    txt('Nv'+o.lvl,x+r*.8,y+r*.77,Math.max(7,r*.3),'#ffd21f',{stroke:false});
+    txt(_t("Nv")+o.lvl,x+r*.8,y+r*.77,Math.max(7,r*.3),'#ffd21f',{stroke:false});
   }
   ctx.restore();
 }
@@ -272,24 +272,24 @@ function drawVerity(x,y,r,o={}){drawVariant(x,y,r,'verity','none',o)}
 
 /* ---------- cosmetics catalog ---------- */
 const COS={
-  skin:{label:'Pele',items:{
-    s1:{name:'Clara',price:0,col:'#efc097'},s2:{name:'Rosada',price:0,col:'#f6d0b8'},s3:{name:'Morena',price:0,col:'#d39b6a'},
-    s4:{name:'Parda',price:0,col:'#a8714c'},s5:{name:'Negra',price:0,col:'#6b4530'},
-    alien:{name:'Alienígena',price:2500,col:'#8fd96b'},azul:{name:'Azul',price:2500,col:'#79a9ff'},ouro:{name:'Dourada',price:12000,col:'#f2c94c'}}},
-  hair:{label:'Cabelo',items:{
-    curto:{name:'Curto',price:0},careca:{name:'Careca',price:300},longo:{name:'Longo',price:1000},moicano:{name:'Moicano Verde',price:1200},
-    topete:{name:'Topete Loiro',price:1400},blackpower:{name:'Black Power',price:1800},rosa:{name:'Rosa Neon',price:2500}}},
-  hat:{label:'Chapéu',items:{
-    nenhum:{name:'Nenhum',price:0},bone:{name:'Boné Vermelho',price:600},palha:{name:'Chapéu de Palha',price:900},
-    cartola:{name:'Cartola',price:2500},viking:{name:'Capacete Viking',price:3500},coroa:{name:'Coroa',price:6000},fedora:{name:'Chapéu do Zé',price:9000}}},
-  glasses:{label:'Óculos',items:{
-    nenhum:{name:'Nenhum',price:0},nerd:{name:'Nerd',price:400},escuros:{name:'Escuros',price:500},tres_d:{name:'3D',price:700},
-    coracao:{name:'Coração',price:900},monoculo:{name:'Monóculo',price:1500}}},
-  shirt:{label:'Roupa',items:{
-    listrada:{name:'Listrada Laranja',price:0,base:'#e8743f',dark:'#cf5b2b'},regata:{name:'Regata Branca',price:600,base:'#f2f2ee',dark:'#cfcfc8'},
-    preta:{name:'Camiseta da Verity',price:800,base:'#26262e',dark:'#15151b'},canarinho:{name:'Canarinho',price:1200,base:'#ffd21f',dark:'#1f9a3a'},
-    havaiana:{name:'Havaiana',price:1500,base:'#22a99a',dark:'#178477'},moletom:{name:'Moletom Roxo',price:2000,base:'#7b4bd6',dark:'#5b34a8'},
-    terno:{name:'Terno Branco',price:6000,base:'#f2efe6',dark:'#cfc9b8'}}}
+  skin:{label:_t("Pele"),items:{
+    s1:{name:_t("Clara"),price:0,col:'#efc097'},s2:{name:_t("Rosada"),price:0,col:'#f6d0b8'},s3:{name:_t("Morena"),price:0,col:'#d39b6a'},
+    s4:{name:_t("Parda"),price:0,col:'#a8714c'},s5:{name:_t("Negra"),price:0,col:'#6b4530'},
+    alien:{name:_t("Alienígena"),price:2500,col:'#8fd96b'},azul:{name:_t("Azul"),price:2500,col:'#79a9ff'},ouro:{name:_t("Dourada"),price:12000,col:'#f2c94c'}}},
+  hair:{label:_t("Cabelo"),items:{
+    curto:{name:_t("Curto"),price:0},careca:{name:_t("Careca"),price:300},longo:{name:_t("Longo"),price:1000},moicano:{name:_t("Moicano Verde"),price:1200},
+    topete:{name:_t("Topete Loiro"),price:1400},blackpower:{name:_t("Black Power"),price:1800},rosa:{name:_t("Rosa Neon"),price:2500}}},
+  hat:{label:_t("Chapéu"),items:{
+    nenhum:{name:_t("Nenhum"),price:0},bone:{name:_t("Boné Vermelho"),price:600},palha:{name:_t("Chapéu de Palha"),price:900},
+    cartola:{name:_t("Cartola"),price:2500},viking:{name:_t("Capacete Viking"),price:3500},coroa:{name:_t("Coroa"),price:6000},fedora:{name:_t("Chapéu do Zé"),price:9000}}},
+  glasses:{label:_t("Óculos"),items:{
+    nenhum:{name:_t("Nenhum"),price:0},nerd:{name:'Nerd',price:400},escuros:{name:_t("Escuros"),price:500},tres_d:{name:'3D',price:700},
+    coracao:{name:_t("Coração"),price:900},monoculo:{name:_t("Monóculo"),price:1500}}},
+  shirt:{label:_t("Roupa"),items:{
+    listrada:{name:_t("Listrada Laranja"),price:0,base:'#e8743f',dark:'#cf5b2b'},regata:{name:_t("Regata Branca"),price:600,base:'#f2f2ee',dark:'#cfcfc8'},
+    preta:{name:_t("Camiseta da Verity"),price:800,base:'#26262e',dark:'#15151b'},canarinho:{name:_t("Canarinho"),price:1200,base:'#ffd21f',dark:'#1f9a3a'},
+    havaiana:{name:_t("Havaiana"),price:1500,base:'#22a99a',dark:'#178477'},moletom:{name:_t("Moletom Roxo"),price:2000,base:'#7b4bd6',dark:'#5b34a8'},
+    terno:{name:_t("Terno Branco"),price:6000,base:'#f2efe6',dark:'#cfc9b8'}}}
 };
 const DEFAULT_EQ={skin:'s1',hair:'curto',hat:'nenhum',glasses:'nenhum',shirt:'listrada',bath:1,intr:'irmao'};
 const cosItem=(cat,k)=>COS[cat].items[k]||COS[cat].items[Object.keys(COS[cat].items)[0]];
@@ -417,11 +417,11 @@ function drawPerson(q,eq){
 
 /* ---------- intruders ---------- */
 const INTRUDERS={
-  irmao:{name:'Irmão Mais Novo',price:0,knock:'Sai logo, eu preciso!',enter:'ECA! VOU CONTAR PRA MÃE!'},
-  namorada:{name:'Namorada',price:2500,knock:'Amor, tô apertada!',enter:'AMOR?! QUE CHEIRO É ESSE?'},
-  pai:{name:'Pai',price:3000,knock:'Filho, vai demorar?',enter:'É PAVÊ OU PRA CAGAR?'},
-  tio:{name:'Tio',price:3500,knock:'Sobrinho, abre aí!',enter:'OPA! FOI MAL, CAMPEÃO!'},
-  ze:{name:'Zé Pilintra',price:20000,knock:'Salve! Vai demorar, camarada?',enter:'LAROYÊ! COM LICENÇA!'}
+  irmao:{name:_t("Irmão Mais Novo"),price:0,knock:_t("Sai logo, eu preciso!"),enter:_t("ECA! VOU CONTAR PRA MÃE!")},
+  namorada:{name:_t("Namorada"),price:2500,knock:_t("Amor, tô apertada!"),enter:_t("AMOR?! QUE CHEIRO É ESSE?")},
+  pai:{name:_t("Pai"),price:3000,knock:_t("Filho, vai demorar?"),enter:_t("É PAVÊ OU PRA CAGAR?")},
+  tio:{name:_t("Tio"),price:3500,knock:_t("Sobrinho, abre aí!"),enter:_t("OPA! FOI MAL, CAMPEÃO!")},
+  ze:{name:'Zé Pilintra',price:20000,knock:_t("Salve! Vai demorar, camarada?"),enter:_t("LAROYÊ! COM LICENÇA!")}
 };
 function figureBase(x,y,s,o){
   ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
@@ -473,14 +473,14 @@ function drawIntruder(kind,x,y,s){
 
 /* ---------- bathrooms ---------- */
 const BATHS=[
-  {name:'Rodoviária',price:0,wall:'#56645a',grout:'#3a463e',floor:['#3a3c36','#2c2e29'],toilet:'#e8e6dc',decor:'grafite'},
-  {name:'Casa da Vó',price:2000,wall:'#2c6e63',grout:'#1f5249',floor:['#3c4152','#2a2e3a'],toilet:'#fbfaf4',decor:'planta'},
-  {name:'Shopping',price:6000,wall:'#3a4c66',grout:'#2b3a50',floor:['#cfd4dc','#b5bcc7'],toilet:'#fbfaf4',decor:'secador'},
-  {name:'Hotel 5 Estrelas',price:15000,wall:'#7a6650',grout:'#5f4f3d',floor:['#e9e0cf','#d6cab3'],toilet:'#fbfaf4',decor:'quadro'},
-  {name:'Mansão',price:40000,wall:'#2e2a4a',grout:'#221f38',floor:['#5a2230','#461a26'],toilet:'#fbfaf4',decor:'lustre'},
-  {name:'Banheiro de Ouro',price:100000,wall:'#7a5a12',grout:'#5c430c',floor:['#3a2a08','#2a1e06'],toilet:'#f2c94c',decor:'ouro'},
-  {name:'Estação Espacial',price:250000,wall:'#18223e',grout:'#0e1528',floor:['#2a3350','#202842'],toilet:'#dfe6f2',decor:'espaco'},
-  {name:'Trono dos Deuses',price:750000,wall:'#d9d2ff',grout:'#bfb4f2',floor:['#f3efff','#e2dbff'],toilet:'#f2c94c',decor:'ceu'}
+  {name:_t("Rodoviária"),price:0,wall:'#56645a',grout:'#3a463e',floor:['#3a3c36','#2c2e29'],toilet:'#e8e6dc',decor:'grafite'},
+  {name:_t("Casa da Vó"),price:2000,wall:'#2c6e63',grout:'#1f5249',floor:['#3c4152','#2a2e3a'],toilet:'#fbfaf4',decor:'planta'},
+  {name:_t("Shopping"),price:6000,wall:'#3a4c66',grout:'#2b3a50',floor:['#cfd4dc','#b5bcc7'],toilet:'#fbfaf4',decor:'secador'},
+  {name:_t("Hotel 5 Estrelas"),price:15000,wall:'#7a6650',grout:'#5f4f3d',floor:['#e9e0cf','#d6cab3'],toilet:'#fbfaf4',decor:'quadro'},
+  {name:_t("Mansão"),price:40000,wall:'#2e2a4a',grout:'#221f38',floor:['#5a2230','#461a26'],toilet:'#fbfaf4',decor:'lustre'},
+  {name:_t("Banheiro de Ouro"),price:100000,wall:'#7a5a12',grout:'#5c430c',floor:['#3a2a08','#2a1e06'],toilet:'#f2c94c',decor:'ouro'},
+  {name:_t("Estação Espacial"),price:250000,wall:'#18223e',grout:'#0e1528',floor:['#2a3350','#202842'],toilet:'#dfe6f2',decor:'espaco'},
+  {name:_t("Trono dos Deuses"),price:750000,wall:'#d9d2ff',grout:'#bfb4f2',floor:['#f3efff','#e2dbff'],toilet:'#f2c94c',decor:'ceu'}
 ].map((b,i)=>({...b,tier:i+1,luck:1+.2*Math.log2(i+1)}));
 const bathOf=n=>BATHS[clamp((n|0)-1,0,BATHS.length-1)];
 function drawBathroomBG(b,o={}){
@@ -492,7 +492,7 @@ function drawBathroomBG(b,o={}){
   const t=S.time;
   switch(b.decor){
     case 'grafite':
-      ctx.save();ctx.translate(250,260);ctx.rotate(-.08);txt('VERITY ESTEVE AQUI',0,0,30,'rgba(255,90,90,.75)',{stroke:false});txt('♥ 2026',30,40,24,'rgba(120,200,255,.7)',{stroke:false});ctx.restore();
+      ctx.save();ctx.translate(250,260);ctx.rotate(-.08);txt(_t("VERITY ESTEVE AQUI"),0,0,30,'rgba(255,90,90,.75)',{stroke:false});txt('♥ 2026',30,40,24,'rgba(120,200,255,.7)',{stroke:false});ctx.restore();
       line([[860,120],[880,170],[868,210]],'rgba(20,20,20,.5)',2);line([[150,420],[190,440]],'rgba(20,20,20,.4)',2);break;
     case 'planta':rr(150,500,70,100,10);ctx.fillStyle='#b5562e';ctx.fill();for(let i=0;i<7;i++)ell(185+Math.cos(i)*30,470-i*10,34,12,'#3fa34d',-.8+i*.3);rr(820,240,90,10,4);ctx.fillStyle='#c9c9c0';ctx.fill();rr(830,250,60,110,8);ctx.fillStyle='#ff9ec4';ctx.fill();break;
     case 'secador':rr(170,240,90,120,12);ctx.fillStyle='#dfe3ea';ctx.fill();rr(190,350,50,12,4);ctx.fillStyle='#9aa3ad';ctx.fill();rr(150,90,820,70,8);ctx.fillStyle='rgba(200,230,255,.25)';ctx.fill();break;
@@ -539,7 +539,7 @@ function thumbVerity(vk,mk,em=4,o={}){
       txt('?',50,56,30,'#c9f5e6',{stroke:false});
     }else drawVariant(50,(vk==='lord'||vk==='exu')?58:54,o.r||26,vk,mk,{glow:.55,t:o.t??1.3,lvl:o.lvl,badge:o.badge,f:o.f});
   });
-  c.setAttribute('role','img'); c.setAttribute('aria-label',o.locked?'Variante não encontrada':fullName(vk,mk));
+  c.setAttribute('role','img'); c.setAttribute('aria-label',o.locked?_t("Variante não encontrada"):fullName(vk,mk));
   return c;
 }
 function drawAvatarBust(eq){ctx.save();ctx.translate(50,62);ctx.scale(.4,.4);ctx.translate(-270,-262);drawPerson({F:0,strain:0},eq);ctx.restore()}
