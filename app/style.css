@@ -228,3 +228,39 @@ canvas.prev{width:15em;height:15em}
 .team .tinfo b{font-family:var(--display);font-weight:400;font-size:1.4em;color:var(--verity)}
 .bchead{display:flex;gap:1.2em;align-items:center;text-align:left;max-width:46em}
 .icard .pow{color:var(--mint)}
+
+/* Todo Dia + Mundo Vivo */
+.mleft{gap:.8em}
+.mgrid2 .mbtn{font-size:1.2em;padding:.5em .8em}
+.evbanner{margin:0;font-weight:900;font-size:.85em;background:linear-gradient(90deg,#ff4fd0,#7a2ad8);color:#fff;padding:.4em .9em;border-radius:999px;box-shadow:0 0 1em rgba(255,79,208,.4)}
+.badge.gold{background:var(--verity);color:var(--ink)}
+.feed{position:absolute;left:1.2em;right:22em;bottom:1em;display:flex;gap:.7em;align-items:center;background:rgba(8,24,21,.85);border-radius:999px;padding:.35em .9em;overflow:hidden;font-weight:800;font-size:.85em}
+.feed b{color:#ff4d5e;letter-spacing:.1em;font-size:.8em;flex:none}
+.feedwrap{overflow:hidden;white-space:nowrap;flex:1;min-width:0}
+.feedwrap span{display:inline-block;padding-left:100%;animation:ticker 28s linear infinite}
+@keyframes ticker{to{transform:translateX(-100%)}}
+.pcard .ttl{font-size:.72em;font-weight:900;color:var(--verity);letter-spacing:.06em}
+.regions{display:flex;gap:.35em;flex-wrap:wrap}
+.regions .pick{font-size:.78em}
+.regions .pick.done{border-color:var(--ok)}
+.regions .pick:disabled{opacity:.35;cursor:default}
+.wgrid.five{grid-template-columns:repeat(5,minmax(0,1fr))}
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.5em}
+.day{background:var(--card);border-radius:.8em;padding:.8em .5em;text-align:center;display:flex;flex-direction:column;gap:.3em;font-weight:800;font-size:.85em}
+.day b{font-family:var(--display);font-weight:400;font-size:1.3em;color:var(--mint)}
+.day.today{box-shadow:inset 0 0 0 .16em var(--verity);background:rgba(255,210,31,.12)}
+.day.got{opacity:.5}
+.mission{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.4em 1em;align-items:center;background:var(--card);border-radius:.8em;padding:.7em .9em}
+.mission .xpbar{grid-column:1/2}
+.achgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5em}
+.ach{background:var(--card);border-radius:.8em;padding:.6em .8em;display:flex;flex-direction:column;gap:.3em;font-size:.85em;font-weight:700}
+.ach b{font-family:var(--display);font-weight:400;font-size:1.25em}
+.ach.done{box-shadow:inset 0 0 0 .12em rgba(95,227,154,.6)}
+.ach.done b{color:var(--ok)}
+.ach.eq{box-shadow:inset 0 0 0 .16em var(--verity)}
+.mtop{display:flex;gap:1.2em;align-items:center;background:rgba(255,210,31,.08);border-radius:1em;padding:.8em 1em;flex-wrap:wrap;box-shadow:inset 0 0 0 .1em rgba(255,210,31,.25)}
+.mtop .big{font-family:var(--display);font-size:2.2em;color:var(--verity);line-height:1}
+.mslots{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:.4em}
+.mslot{aspect-ratio:1;border-radius:.7em;background:rgba(0,0,0,.3);display:grid;place-items:center;border:0;color:var(--porcelain);font-weight:900;font-size:.72em;cursor:pointer}
+.odds{display:flex;gap:2px;height:.55em;border-radius:999px;overflow:hidden;width:100%}
+.odds i{display:block;height:100%}

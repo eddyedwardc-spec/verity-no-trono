@@ -34,6 +34,11 @@ service cloud.firestore {
       allow update: if signedIn() && (resource.data.from == me() || resource.data.to == me());
     }
 
+    // Códigos secretos e avisos que o dono do jogo cria pelo console do Firebase (meta/codes). Só leitura.
+    match /meta/{doc} {
+      allow read: if signedIn();
+    }
+
     // Mercado: todos leem; o vendedor cria e cancela; qualquer jogador pode marcar um anúncio aberto como comprado por ele.
     match /market/{id} {
       allow read: if signedIn();

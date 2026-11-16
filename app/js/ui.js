@@ -45,14 +45,14 @@ function closePanel(id){
 }
 function closeTopPanel(){if(!$('modal').hidden){closeModal();return true}if(panelStack.length){closePanel(panelStack[panelStack.length-1]);return true}return false}
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closePanel(b.closest('.panel').id));
-const TAB={coll:'mine',shop:'boosts',market:'buy',friends:'list',rank:'xp'};
+const TAB={coll:'mine',shop:'marmitas',diario:'daily',market:'buy',friends:'list',rank:'xp'};
 function syncTabs(id){
   const p=$(id);
   p.querySelectorAll('.tab[data-tab]').forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===TAB[id]?'true':'false'));
   p.querySelectorAll('[data-pane]').forEach(pn=>pn.hidden=pn.dataset.pane!==TAB[id]);
 }
 document.querySelectorAll('.panel').forEach(p=>p.querySelectorAll('.tab[data-tab]').forEach(t=>t.onclick=()=>{TAB[p.id]=t.dataset.tab;syncTabs(p.id);sfx.click();RENDER[p.id]&&RENDER[p.id](true)}));
-function updateWallets(){document.querySelectorAll('.wallet').forEach(w=>w.textContent=money(P.money))}
+function updateWallets(){document.querySelectorAll('.wallet').forEach(w=>w.textContent=`${money(P.money)} · ${fmt(P.rolos)} ${ROLO}`)}
 const RENDER={};
 const ANIM={};
 function panelTick(){for(const id of panelStack){if(ANIM[id]&&!$(id).hidden)ANIM[id]()}}
@@ -105,7 +105,7 @@ const sortItems=(items,mode)=>[...items].sort(mode==='pow'?(a,b)=>itemPower(b)-i
 /* ---------- menu ---------- */
 function goMenu(){
   S.mode='menu'; S.paused=false; S.inv=null; S.parts=[]; S.floats=[]; stopGrunt(); $('knockBtn').hidden=true;
-  showOnly('menu'); renderMenu(); renderUpdate();
+  showOnly('menu'); renderMenu(); renderUpdate(); setTimeout(maybeDaily,400);
 }
 /* ---------- auto-update (app only) ---------- */
 let UPD={state:'idle',pct:0,ver:''},APP_VER='',updTimer=null;
@@ -128,19 +128,19 @@ if(IS_APP){
 function renderMenu(){
   const pc=$('playerCard'); pc.textContent='';
   const L=level(),cur=P.xp-xpAt(L),need=xpAt(L+1)-xpAt(L);
-  const nm=el('span','nm'); const dot=el('span','dot'+(online()?' on':NET.status==='erro'?' err':'')); dot.title=netText(); nm.append(dot,document.createTextNode(P.username||'Jogador'));
+  const nm=el('span','nm'); const dot=el('span','dot'+(online()?' on':NET.status==='erro'?' err':'')); dot.title=netText(); nm.append(dot,document.createTextNode((P.username||'Jogador')+(P.rebirths?' '+'★'.repeat(Math.min(P.rebirths,5))+(P.rebirths>5?P.rebirths:''):'')));
   const lv=el('span','lv',`Nível ${L} · ${fmt(cur)}/${fmt(need)} XP`); const xb=el('div','xpbar'); const xi=el('i'); xi.style.width=clamp(cur/need*100,0,100)+'%'; xb.append(xi);
   const right=el('div'); right.style.cssText='display:grid;gap:.3em;min-width:0';
-  right.append(nm,lv,xb,el('span','mo',money(P.money)));
+  right.append(nm);if(P.title)right.append(el('span','ttl',titleName(P.title).toUpperCase()));right.append(lv,xb,el('span','mo',`${money(P.money)} · ${fmt(P.rolos)} ${ROLO}`));
   pc.append(thumbAvatar(P.eq,4.2),right);
   const b=bathOf(P.eq.bath); $('menuBath').textContent=`${b.name} · sorte ×${b.luck.toFixed(2).replace('.',',')}`+(P.items.length?` · ${P.items.length} Verities`:'')
     +(P.unknown.length?` · ${P.unknown.length} de versão nova (atualize)`:'')+(APP_VER?` · v${APP_VER}`:'');
-  const nb=BOSSES[Math.min(P.world.max,WORLDS.length)-1],done=P.world.beaten.includes(nb.world),tp=teamPower();
+  const nb=WORLDS[Math.min(P.world.max,WORLDS.length)-1].boss,done=P.world.beaten.includes(nb.world),tp=teamPower();
   const mp=$('menuProg'); mp.textContent='';
   mp.append(document.createTextNode(`Mundo ${P.world.max}/${WORLDS.length} · `));
   if(done&&P.world.beaten.length>=WORLDS.length)mp.append(el('b',null,'Todos os chefes derrotados!'));
   else{mp.append(document.createTextNode('Próximo chefe: '));mp.append(el('b',null,nb.name));mp.append(document.createTextNode(` · Poder ${fmt(tp)} / ${fmt(nb.rec)}`))}
-  updateBadges(); updateWallets();
+  updateBadges(); updateWallets(); renderMenuLive();
 }
 $('mPlay').onclick=()=>{audioInit();openPanel('journey')};
 function closeAllPanels(){while(panelStack.length)closePanel(panelStack[panelStack.length-1])}
@@ -149,28 +149,6 @@ const petSummary=b=>Object.entries(b).filter(([k,v])=>v>0).map(([k,v])=>ABIL[k].
 /* ---------- journey ---------- */
 RENDER.journey=()=>renderJourney();
 function thumbWorld(Wd,em){const c=canvasEl(em);paint(c,100,()=>{circ(50,50,49,Wd.pal.tube);circ(50,50,49,'rgba(0,0,0,.15)');ctx.save();ctx.beginPath();ctx.arc(50,50,49,0,TAU);ctx.clip();for(let i=0;i<4;i++){ctx.strokeStyle=Wd.pal.fold;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(10+i*25,0);ctx.quadraticCurveTo(25+i*25,50,10+i*25,100);ctx.stroke()}ctx.restore();drawVariant(50,56,24,Wd.boss.key,'none',{glow:.3,t:1})});return c}
-function renderJourney(){
-  const tp=teamPower(); $('jPower').textContent='Poder da equipe: '+fmt(tp);
-  $('jHint').textContent='Cada mundo tem Verities que só saem nele. Derrote o chefe pra liberar o próximo mundo e ganhar a Verity dele.';
-  const g=$('jGrid'); g.textContent='';
-  for(const Wd of WORLDS){
-    const B=Wd.boss,open=Wd.n<=P.world.max,beaten=P.world.beaten.includes(Wd.n);
-    const c=el('div','wcard'+(open?'':' locked')+(beaten?' done':'')); c.style.setProperty('--wc',Wd.pal.tube);
-    const top=el('div','wtop'),tt=el('div'); tt.append(el('b',null,`${Wd.n}. ${Wd.name}`),el('small',null,open?Wd.sub:`Derrote o chefe do mundo ${Wd.n-1}`));
-    top.append(thumbWorld(Wd,3.6),tt); c.append(top);
-    const ex=el('div','excl');
-    if(Wd.pool.length){ex.append(document.createTextNode('Exclusivas: '));for(const [k] of Wd.pool){const got=P.items.some(i=>i.v===k);ex.append(thumbVerity(k,'none',2.2,{locked:!got,badge:false}))}}
-    else ex.append(document.createTextNode('As 10 Verities clássicas.'));
-    c.append(ex);
-    const bl=el('div','bline'); bl.append(document.createTextNode(`Chefe: ${B.name} · `)); const pw=el('span',tp>=B.rec?'ok':'bad',`poder recomendado ${fmt(B.rec)}`); bl.append(pw);
-    if(beaten)bl.append(document.createTextNode(' · derrotado ✓')); c.append(bl);
-    if(Wd.special)c.append(el('div','bline',SPECIALS[Wd.special]));
-    const row=el('div','row'),pl=el('button','btn sm','Jogar'),bs=el('button','btn sm danger',beaten?'Chefe de novo':'Enfrentar chefe');
-    pl.disabled=!open; bs.disabled=!open;
-    pl.onclick=()=>{closeAllPanels();goCard1(Wd.n)}; bs.onclick=()=>{closeAllPanels();goBoss(Wd.n)};
-    row.append(pl,bs); c.append(row); g.append(c);
-  }
-}
 function showBossCard(){
   const B=run.boss; $('bcEyebrow').textContent=`Chefe do mundo ${B.world} · ${run.W.name}`;
   $('bcName').textContent=B.name; $('bcDesc').textContent=B.desc;
@@ -268,7 +246,7 @@ function renderColl(){
   renderTeamBar();
   if(!items.length)g.append(el('p','empty','Nenhuma Verity ainda. Jogue uma partida pra começar a coleção.'));
   if(!items.some(i=>i.id===collSel))collSel=items[0]?items[0].id:null;
-  for(const it of items)g.append(itemCard(it,{sel:it.id===collSel,tag:P.pets.includes(it.id)?'EQUIPE':f&&f.id===it.id?'VITRINE':null,onClick:()=>{collSel=it.id;sfx.click();renderColl()}}));
+  for(const it of items)g.append(itemCard(it,{sel:it.id===collSel,tag:P.pets.includes(it.id)?'EQUIPE':P.museum.ids.includes(it.id)?'MUSEU':f&&f.id===it.id?'VITRINE':null,onClick:()=>{collSel=it.id;sfx.click();renderColl()}}));
   renderCollDetail(P.items.find(i=>i.id===collSel));
 }
 function renderCollDetail(it){
@@ -298,7 +276,11 @@ function renderCollDetail(it){
   fu.disabled=(it.f||0)>=2||grp<5||P.money<fuseCost(it);
   fu.title='5 Verities iguais (mesma variante, mutação e fusão) viram 1 '+((it.f||0)?'Arco-íris':'Dourada')+', bem mais forte.';
   fu.onclick=()=>confirmDo('Fundir?',`5 × ${fullName(it.v,it.m,it.f)} viram 1 ${fullName(it.v,it.m,(it.f||0)+1)}. Custa ${money(fuseCost(it))}. O nível fica o maior entre elas.`,'Fundir',()=>{if(act(()=>fuseItem(it.id),'Fusão feita!','up')){collSel=LAST_FUSED;renderColl()}});
-  acts.append(pt,up,fu,sell,mk,vt); box.append(acts);
+  const inMu=P.museum.ids.includes(it.id),mu=el('button','btn ghost sm',inMu?'Tirar do Museu':'Expor no Museu');
+  mu.onclick=()=>{toast(toggleMuseum(it.id));sfx.click()};
+  const cs=el('button','btn ghost sm','Ver cutscene');
+  cs.onclick=()=>{closeAllPanels();startCutscene(it.v,it.m,it.f,()=>{goMenu();openPanel('coll');collSel=it.id;renderColl()});if(CS)CS.replay=true};
+  acts.append(pt,up,fu,mu,cs,sell,mk,vt); box.append(acts);
   if(!online())box.append(el('p','small','Mercado e trocas: '+netText()));
   d.append(box);
 }
@@ -353,6 +335,7 @@ function renderIndex(){
 let lookCat='skin',shopPrev={kind:'eq',eq:null};
 RENDER.shop=()=>renderShop();
 function renderShop(){
+  if(TAB.shop==='marmitas'){renderMarmitas();return}
   const main=$('shopMain'); main.textContent=''; const info=$('shopInfo'); info.textContent='';
   const tab=TAB.shop,g=el('div','igrid wide');
   const card=(thumb,name,sub,priceTxt,btnLabel,btnDisabled,onBuy,onSel,owned)=>{
@@ -571,7 +554,7 @@ function renderRank(){
 function fillRankRow(row,pos,r){
   const hl=k=>TAB.rank===k?'c hl':'c';
   row.append(el('span','pos',String(pos)),thumbAvatar(r.eq,3));
-  const nm=el('span','lname'); nm.append(el('b',null,r.username),el('small',null,`Nível ${r.level}`)); row.append(nm);
+  const nm=el('span','lname'); nm.append(el('b',null,r.username+(r.rebirths?' ★'+r.rebirths:'')),el('small',null,`Nível ${r.level}`+(r.title?' · '+titleName(r.title):''))); row.append(nm);
   const col=(k,lab,v)=>{const c=el('span',hl(k));c.append(el('small',null,lab),document.createTextNode(v));return c};
   row.append(col('xp','Nível',String(r.level)),col('power','Poder',fmt(r.power||0)),col('best','Recorde',fmt(r.best)),col('money','Dinheiro',money(r.money)),col('totalValue','Coleção',money(r.totalValue)));
   const bv=el('span','bv'); if(r.bestV){bv.append(thumbVerity(r.bestV.v,r.bestV.m,2.6,{badge:false}),document.createTextNode(fullName(r.bestV.v,r.bestV.m,r.bestV.f)))}else bv.textContent='—';
@@ -621,12 +604,3 @@ document.addEventListener('fullscreenchange',()=>onFull(!!document.fullscreenEle
 if(IS_APP&&window.desktop.onFullScreen)window.desktop.onFullScreen(onFull);
 addEventListener('resize',()=>{fit();for(const id of panelStack)if(RENDER[id])RENDER[id](false);if(!$('menu').hidden)renderMenu()});
 
-/* ---------- boot ---------- */
-const firstGesture=()=>{audioInit();removeEventListener('pointerdown',firstGesture,true);removeEventListener('keydown',firstGesture,true)};
-addEventListener('pointerdown',firstGesture,true); addEventListener('keydown',firstGesture,true);
-loadProfile(); fit();
-if(IS_APP){$('mQuit').hidden=false;$('fullStart').hidden=false;audioInit();if(SET.fullStart&&!SMOKE_RUN)window.desktop.setFullScreen(true)}
-updateWallets();
-if(P.username)goMenu(); else {S.mode='boot';showOnly('setup');$('setupNet').textContent=netText()}
-requestAnimationFrame(frame);
-netInit();

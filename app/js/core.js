@@ -77,7 +77,8 @@ function drawFx(){
     if(p.shape==='drop'){ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI);ctx.lineTo(p.x,p.y-p.size*2.1);ctx.closePath();ctx.fill()}
     else if(p.shape==='puff')circ(p.x,p.y,p.size*(1+(1-a)*1.6),p.col);
     else if(p.shape==='star')star4(p.x,p.y,p.size*1.6*Math.sqrt(a),p.col);
-    else circ(p.x,p.y,p.size*Math.sqrt(a),p.col);
+    else if(p.shape==='dot')circ(p.x,p.y,p.size*Math.sqrt(a),p.col);
+    else drawShapeExtra(p,a);
   }
   ctx.globalAlpha=1;
   for(const f of S.floats){
@@ -286,7 +287,7 @@ function sing(line,t){
   const delay=Math.max(0,(t-AU.ctx.currentTime)*1000);
   MUS.pending.push(setTimeout(()=>{
     MUS.lyric=line; MUS.lyricAt=S.time;
-    if(!SET.voice||AU.muted||SET.musicVol<=0||!('speechSynthesis' in window))return;
+    if((typeof CS!=='undefined'&&CS)||!SET.voice||AU.muted||SET.musicVol<=0||!('speechSynthesis' in window))return;
     try{
       const u=new SpeechSynthesisUtterance(line); u.lang='pt-BR'; if(MUS.voice)u.voice=MUS.voice;
       u.rate=1.3; u.pitch=.35; u.volume=clamp(SET.musicVol*1.8,0,1);

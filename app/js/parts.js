@@ -19,6 +19,7 @@ function drawGenFace(V,x,y,r,hurt){
     case 'glow':ctx.save();ctx.shadowColor='#ffffff';ctx.shadowBlur=r*.3;for(const s of[-1,1])ell(x+s*r*.3,y-r*.1,r*.12,r*.16,'#ffffff',s*.2);ctx.restore();break;
     case 'sleepy':ctx.strokeStyle=ink;ctx.lineWidth=w;for(const s of[-1,1]){ctx.beginPath();ctx.arc(x+s*r*.3,y-r*.1,r*.12,.1*Math.PI,.9*Math.PI);ctx.stroke()}break;
     case 'star':for(const s of[-1,1]){const cx=x+s*r*.3,cy=y-r*.08;ctx.fillStyle='#ffcf3a';ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rad=i%2?r*.07:r*.17;ctx.lineTo(cx+Math.cos(a)*rad,cy+Math.sin(a)*rad)}ctx.closePath();ctx.fill();ctx.strokeStyle=ink;ctx.lineWidth=Math.max(1,r*.03);ctx.stroke()}break;
+    case 'tri':ctx.save();ctx.shadowColor='#ffd23a';ctx.shadowBlur=r*.3;for(const s of[-1,1])poly([[x+s*r*.32,y-r*.3],[x+s*r*.14,y+r*.02],[x+s*r*.5,y+r*.02]],'#ffe066');ctx.restore();break;
     case 'x':for(const s of[-1,1]){const cx=x+s*r*.3,cy=y-r*.08,d=r*.1;line([[cx-d,cy-d],[cx+d,cy+d]],ink,w);line([[cx+d,cy-d],[cx-d,cy+d]],ink,w)}break;
   }
   switch(V.mouth){
@@ -75,6 +76,7 @@ function drawAccFront(V,x,y,r,t){
     case 'crown':poly([[x-r*.5,y-r*.78],[x-r*.5,y-r*1.18],[x-r*.25,y-r*.98],[x,y-r*1.3],[x+r*.25,y-r*.98],[x+r*.5,y-r*1.18],[x+r*.5,y-r*.78]],'#f2c230');circ(x,y-r*.9,r*.08,'#e0303a');break;
     case 'cork':rr(x-r*.38,y-r*1.25,r*.76,r*.5,r*.12);ctx.fillStyle='#c89a5a';ctx.fill();for(let i=0;i<6;i++)circ(x-r*.25+(i%3)*r*.25,y-r*1.12+Math.floor(i/3)*r*.22,r*.04,'#8a6430');break;
     case 'crystal':for(const [dx,h] of[[-.5,.55],[0,.8],[.45,.5]])poly([[x+dx*r-r*.14,y-r*.8],[x+dx*r,y-r*(.8+h)],[x+dx*r+r*.14,y-r*.8]],'rgba(200,240,255,.9)');break;
+    default:drawAccExtra(a,V,x,y,r,t);break;
     case 'bubbles':ctx.lineWidth=Math.max(1,r*.03);for(let i=0;i<3;i++){const k=(t*.6+i/3)%1;ctx.strokeStyle=`rgba(255,255,255,${.7*(1-k)})`;ctx.beginPath();ctx.arc(x+r*(.5+i*.15),y-r*(.6+k*.9),r*(.08+i*.03),0,TAU);ctx.stroke()}break;
   }
 }

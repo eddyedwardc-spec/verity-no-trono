@@ -29,12 +29,15 @@
   <section id="menu" class="screen menu" hidden>
     <div class="mleft">
       <p class="eyebrow">um jogo de esforço intestinal</p>
+      <p class="evbanner" id="evBanner" hidden></p>
       <h1>Cague um Verity</h1>
       <p class="mprog" id="menuProg"></p>
       <button class="btn big" id="mPlay">Jogar</button>
       <div class="mgrid2">
         <button class="mbtn" id="mColl">Coleção</button>
+        <button class="mbtn" id="mMuseum">Museu <span class="badge gold" id="museumBadge" hidden></span></button>
         <button class="mbtn" id="mShop">Loja</button>
+        <button class="mbtn" id="mDaily">Diário <span class="badge" id="dailyBadge" hidden></span></button>
         <button class="mbtn" id="mMarket">Mercado</button>
         <button class="mbtn" id="mFriends">Amigos <span class="badge" id="friendBadge" hidden></span></button>
         <button class="mbtn" id="mRank">Ranking</button>
@@ -46,6 +49,7 @@
       </div>
     </div>
     <div class="pcard" id="playerCard"></div>
+    <div class="feed" id="feed" hidden><b>AO VIVO</b><div class="feedwrap"><span id="feedText"></span></div></div>
     <p class="mbath" id="menuBath"></p>
   </section>
 
@@ -135,8 +139,20 @@
 
   <!-- painéis -->
   <section id="journey" class="panel" hidden aria-label="Jornada">
-    <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Jornada</h3><span class="chip gold" id="jPower"></span><span class="wallet"></span></header>
-    <div class="pbody"><p class="small" id="jHint"></p><div class="wgrid" id="jGrid"></div></div>
+    <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Jornada</h3><span class="chip gold" id="jPower"></span><button class="btn sm danger" id="jRebirth">Renascer</button><span class="wallet"></span></header>
+    <div class="pbody"><div class="regions" id="jRegions"></div><p class="small" id="jHint"></p><div class="wgrid five" id="jGrid"></div></div>
+  </section>
+
+  <section id="diario" class="panel" hidden aria-label="Diário">
+    <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Diário</h3>
+      <div class="tabs" role="tablist"><button class="tab" data-tab="daily">Recompensa</button><button class="tab" data-tab="missions">Missões</button><button class="tab" data-tab="ach">Conquistas</button><button class="tab" data-tab="codes">Códigos</button></div>
+      <span class="wallet"></span></header>
+    <div class="pbody" id="diarioBody"></div>
+  </section>
+
+  <section id="museu" class="panel" hidden aria-label="Museu">
+    <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Museu</h3><span class="wallet"></span></header>
+    <div class="pbody" id="museuBody"></div>
   </section>
 
   <section id="coll" class="panel" hidden aria-label="Coleção">
@@ -156,7 +172,7 @@
 
   <section id="shop" class="panel" hidden aria-label="Loja">
     <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Loja</h3>
-      <div class="tabs" role="tablist"><button class="tab" data-tab="boosts">Boosts</button><button class="tab" data-tab="baths">Banheiros</button><button class="tab" data-tab="look">Visual</button><button class="tab" data-tab="intr">Invasores</button></div>
+      <div class="tabs" role="tablist"><button class="tab" data-tab="marmitas">Marmitas</button><button class="tab" data-tab="boosts">Boosts</button><button class="tab" data-tab="baths">Banheiros</button><button class="tab" data-tab="look">Visual</button><button class="tab" data-tab="intr">Invasores</button></div>
       <span class="wallet"></span></header>
     <div class="pbody split">
       <div class="pmain" id="shopMain"></div>
@@ -238,9 +254,13 @@
 <script src="js/core.js"></script>
 <script src="js/art.js"></script>
 <script src="js/parts.js"></script>
+<script src="js/art2.js"></script>
 <script src="js/content.js"></script>
 <script src="js/data.js"></script>
+<script src="js/live.js"></script>
+<script src="js/cutscene.js"></script>
 <script src="js/game.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/ui2.js"></script>
 </body>
 </html>
