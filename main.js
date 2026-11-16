@@ -99,6 +99,8 @@ async function smoke(win) {
     out.vendor=await fetch('vendor/firebase-firestore-compat.js').then(r=>r.ok).catch(()=>false);
     openPanel('coll');await wait(100);openPanel('shop');await wait(100);closeTopPanel();closeTopPanel();
     document.getElementById('mPlay').click();await wait(200);
+    out.journey=!document.getElementById('journey').hidden&&document.querySelectorAll('#jGrid .wcard').length;
+    document.querySelector('#jGrid .wcard .btn').click();await wait(200);
     out.card1=!document.getElementById('card1').hidden;
     document.getElementById('go1').click();await wait(1000);
     out.mode=S.mode;out.music=MUS.track;

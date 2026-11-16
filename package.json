@@ -1,7 +1,7 @@
 {
   "name": "verity-no-trono",
   "productName": "Cague um Verity",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Cague um Verity",
   "main": "main.js",
   "private": true,

@@ -33,7 +33,7 @@ const MUTS=[
   {k:'god',name:'God',mult:500,col:'#fff0a0',p:.0006,min:1200}
 ];
 const MUT_BY=Object.fromEntries(MUTS.map((m,i)=>[m.k,{...m,i}]));
-const fullName=(v,m)=>(m&&m!=='none'?MUT_BY[m].name+' ':'')+VARS[v].name;
+const fullName=(v,m,f)=>(f?FUSE[f].name+' ':'')+(m&&m!=='none'?MUT_BY[m].name+' ':'')+VARS[v].name;
 const stars=n=>'★'.repeat(n+1);
 
 /* ---------- Verity rendering ---------- */
@@ -242,6 +242,7 @@ function drawVariant(x,y,r,vk,mk,o={}){
     const g=ctx.createRadialGradient(x,y,r*.3,x,y,r*gr);g.addColorStop(0,`rgba(${gc},${(vk==='eclipse'?.65:.5)*ga})`);g.addColorStop(1,`rgba(${gc},0)`);
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r*gr,0,TAU);ctx.fill();
   }
+  if(V.gen)drawAccBack(V,x,y,r,t);
   const b=ctx.createRadialGradient(x-r*.35,y-r*.4,r*.08,x,y,r*1.05);
   b.addColorStop(0,V.col[0]);b.addColorStop(.45,V.col[1]);b.addColorStop(1,V.col[2]);
   bodyPath(vk,x,y,r);ctx.fillStyle=b;ctx.fill();
@@ -255,10 +256,12 @@ function drawVariant(x,y,r,vk,mk,o={}){
   if(mk!=='none'){ctx.save();bodyPath(vk,x,y,r);ctx.clip();mutOverlay(x,y,r,vk,mk,t);ctx.restore()}
   if(vk!=='eclipse')ell(x-r*.38,y-r*(vk==='obesity'?.72:.42),r*.22,r*.12,'rgba(255,255,255,.7)',-.6);
   else ell(x-r*.4,y-r*.45,r*.2,r*.1,'rgba(255,255,255,.16)',-.6);
-  if(o.face!==false&&r>=7)drawFace(vk,x,y,r,o.hurt);
+  if(o.face!==false&&r>=7){if(V.gen)drawGenFace(V,x,y,r,o.hurt);else drawFace(vk,x,y,r,o.hurt)}
   if(fx&&mk!=='none')mutFront(x,y,r,vk,mk,t);
   if(vk==='lord')drawHat(x,y,r);
   if(vk==='exu')drawFedora(x,y,r);
+  if(V.gen)drawAccFront(V,x,y,r,t);
+  if(fx&&o.f)drawFusion(x,y,r,o.f,t);
   if(o.lvl>1&&r>=14&&o.badge!==false){
     rr(x+r*.35,y+r*.55,r*.9,r*.42,r*.2);ctx.fillStyle='rgba(10,24,22,.85)';ctx.fill();
     txt('Nv'+o.lvl,x+r*.8,y+r*.77,Math.max(7,r*.3),'#ffd21f',{stroke:false});
@@ -526,9 +529,9 @@ function thumbVerity(vk,mk,em=4,o={}){
   paint(c,100,()=>{
     if(o.locked){
       drawVariant(50,54,26,vk,'none',{noFx:true,face:false,t:1.3});
-      ctx.globalCompositeOperation='source-atop'; ctx.fillStyle='#1c2b28'; ctx.fillRect(0,0,100,100); ctx.globalCompositeOperation='source-over';
-      txt('?',50,56,30,'#86e0c8',{stroke:false});
-    }else drawVariant(50,(vk==='lord'||vk==='exu')?58:54,o.r||26,vk,mk,{glow:.55,t:o.t??1.3,lvl:o.lvl,badge:o.badge});
+      ctx.globalCompositeOperation='source-atop'; ctx.fillStyle='#3b5752'; ctx.fillRect(0,0,100,100); ctx.globalCompositeOperation='source-over';
+      txt('?',50,56,30,'#c9f5e6',{stroke:false});
+    }else drawVariant(50,(vk==='lord'||vk==='exu')?58:54,o.r||26,vk,mk,{glow:.55,t:o.t??1.3,lvl:o.lvl,badge:o.badge,f:o.f});
   });
   c.setAttribute('role','img'); c.setAttribute('aria-label',o.locked?'Variante não encontrada':fullName(vk,mk));
   return c;

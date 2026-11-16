@@ -30,6 +30,7 @@
     <div class="mleft">
       <p class="eyebrow">um jogo de esforço intestinal</p>
       <h1>Cague um Verity</h1>
+      <p class="mprog" id="menuProg"></p>
       <button class="btn big" id="mPlay">Jogar</button>
       <div class="mgrid2">
         <button class="mbtn" id="mColl">Coleção</button>
@@ -59,6 +60,7 @@
       <li><span class="ic fibra"></span><span><b>Fibra</b> dá pontos, conforto e alarga a faixa verde.</span></li>
       <li><span class="ic cafe"></span><span><b>Café</b> é turbo. <span class="ic gas"></span> <b>Gás</b> te empurra.</span></li>
     </ul>
+    <p class="small" id="card1World"></p>
     <p class="small" id="card1Boosts"></p>
     <div class="row"><button class="btn" id="go1">Bora</button><button class="btn ghost" id="back1">Menu</button></div>
   </section>
@@ -74,6 +76,18 @@
       <li><span class="ic veia"></span><span>Força demais enche a <b>veia da testa</b>. Encheu, você desmaia.</span></li>
     </ul>
     <button class="btn" id="go2">Sentar</button>
+  </section>
+
+  <section id="bossCard" class="screen" hidden>
+    <p class="eyebrow" id="bcEyebrow"></p>
+    <div class="bchead"><span id="bcPic"></span><div><h2 id="bcName"></h2><p class="lead" id="bcDesc"></p></div></div>
+    <ul class="rules">
+      <li><span class="ic zona"></span><span>Fique na <b>faixa verde</b> pra causar dano. Combo e contração batem mais forte.</span></li>
+      <li><span class="ic combo"></span><span>Você tem <b>50 segundos</b>. Mais poder na equipe = mais dano.</span></li>
+      <li><span class="ic porta"></span><span>A porta continua batendo. Se alguém entrar, você perde a luta.</span></li>
+      <li><span class="ic veia"></span><span id="bcPower"></span></li>
+    </ul>
+    <div class="row"><button class="btn" id="bcGo">Lutar</button><button class="btn ghost" id="bcBack">Voltar</button></div>
   </section>
 
   <section id="fail" class="screen" hidden>
@@ -120,13 +134,19 @@
   </section>
 
   <!-- painéis -->
+  <section id="journey" class="panel" hidden aria-label="Jornada">
+    <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Jornada</h3><span class="chip gold" id="jPower"></span><span class="wallet"></span></header>
+    <div class="pbody"><p class="small" id="jHint"></p><div class="wgrid" id="jGrid"></div></div>
+  </section>
+
   <section id="coll" class="panel" hidden aria-label="Coleção">
     <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Coleção</h3>
       <div class="tabs" role="tablist"><button class="tab" data-tab="mine">Minhas Verities</button><button class="tab" data-tab="index">Índice de raridade</button></div>
       <span class="wallet"></span></header>
     <div class="pbody split" data-pane="mine">
       <div class="pmain">
-        <div class="toolbar"><label>Ordenar <select id="collSort"><option value="val">Valor</option><option value="rar">Raridade</option><option value="lvl">Nível</option><option value="new">Mais recentes</option></select></label><span id="collCount"></span></div>
+        <div class="team" id="teamBar"></div>
+        <div class="toolbar"><label>Ordenar <select id="collSort"><option value="pow">Poder</option><option value="val">Valor</option><option value="rar">Raridade</option><option value="lvl">Nível</option><option value="new">Mais recentes</option></select></label><span id="collCount"></span></div>
         <div class="igrid" id="collGrid"></div>
       </div>
       <aside class="pside" id="collDetail"></aside>
@@ -177,7 +197,7 @@
 
   <section id="rank" class="panel" hidden aria-label="Ranking">
     <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Ranking global</h3>
-      <div class="tabs" role="tablist"><button class="tab" data-tab="xp">Nível</button><button class="tab" data-tab="best">Recorde</button><button class="tab" data-tab="money">Dinheiro</button><button class="tab" data-tab="totalValue">Coleção</button></div>
+      <div class="tabs" role="tablist"><button class="tab" data-tab="xp">Nível</button><button class="tab" data-tab="power">Poder</button><button class="tab" data-tab="best">Recorde</button><button class="tab" data-tab="money">Dinheiro</button><button class="tab" data-tab="totalValue">Coleção</button></div>
       <span class="wallet"></span></header>
     <div class="pbody"><p class="notice" id="rkNotice"></p><div class="rows" id="rkList"></div></div>
   </section>
@@ -217,6 +237,8 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/core.js"></script>
 <script src="js/art.js"></script>
+<script src="js/parts.js"></script>
+<script src="js/content.js"></script>
 <script src="js/data.js"></script>
 <script src="js/game.js"></script>
 <script src="js/ui.js"></script>

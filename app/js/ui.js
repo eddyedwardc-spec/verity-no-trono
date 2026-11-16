@@ -23,7 +23,7 @@ function confirmDo(title,text,label,fn,cls){modal(title,text,[{label,fn,cls},{la
 function act(fn,okMsg,snd='buy'){const e=fn();if(e){toast(e);sfx.err();return false}if(okMsg)toast(okMsg);if(snd)sfx[snd]();return true}
 
 /* ---------- screens & panels ---------- */
-const SCREENS=['setup','menu','card1','card2','fail','pause'];
+const SCREENS=['setup','menu','card1','card2','bossCard','fail','pause'];
 function showOnly(id){
   for(const s of SCREENS)$(s).hidden=s!==id;
   $('results').hidden=true; $('pauseBtn').hidden=!(id===null&&playing());
@@ -89,18 +89,18 @@ function mutChip(mk){const M=MUT_BY[mk],c=el('span','chip',mk==='none'?'Sem muta
 function itemCard(it,o={}){
   const V=VARS[it.v],R=RAR[V.r],M=MUT_BY[it.m];
   const b=el('button','icard'); b.type='button'; b.style.setProperty('--rc',R.col+'99'); b.setAttribute('aria-pressed',o.sel?'true':'false');
-  b.append(thumbVerity(it.v,it.m,o.em||4.6,{lvl:it.lvl}));
-  const nm=el('span','nm',fullName(it.v,it.m)); if(it.m!=='none')nm.style.color=M.col;
+  b.append(thumbVerity(it.v,it.m,o.em||4.6,{lvl:it.lvl,f:it.f}));
+  const nm=el('span','nm',fullName(it.v,it.m,it.f)); if(it.f)nm.style.color=FUSE[it.f].col;else if(it.m!=='none')nm.style.color=M.col;
   const sub=el('span','sub',`${R.name} ${stars(V.r)} · Nv ${it.lvl}`); sub.style.color=R.col;
-  b.append(nm,sub,el('span','val',money(o.price??itemValue(it))));
+  b.append(nm,sub,el('span','sub pow','Poder '+fmt(itemPower(it))),el('span','val',money(o.price??itemValue(it))));
   if(o.extra)b.append(el('span','sub',o.extra));
   if(o.tag)b.append(el('span','tag',o.tag));
   if(o.onClick)b.onclick=o.onClick;
   return b;
 }
-function smallThumbs(items){const d=el('div','thumbs');for(const it of items.slice(0,8))d.append(thumbVerity(it.v,it.m,2.6,{lvl:it.lvl,badge:false}));if(items.length>8)d.append(el('span','small','+'+(items.length-8)));return d}
+function smallThumbs(items){const d=el('div','thumbs');for(const it of items.slice(0,8))d.append(thumbVerity(it.v,it.m,2.6,{lvl:it.lvl,badge:false,f:it.f}));if(items.length>8)d.append(el('span','small','+'+(items.length-8)));return d}
 function drawPrev(c,fn,box=100){const fs=parseFloat(stage.style.fontSize)||16,px=Math.round(15*fs*DPR);if(c.width!==px){c.width=c.height=px}paint(c,box,fn)}
-const sortItems=(items,mode)=>[...items].sort(mode==='rar'?(a,b)=>itemRank(b)-itemRank(a)||itemValue(b)-itemValue(a):mode==='lvl'?(a,b)=>b.lvl-a.lvl||itemValue(b)-itemValue(a):mode==='new'?(a,b)=>b.t-a.t:(a,b)=>itemValue(b)-itemValue(a));
+const sortItems=(items,mode)=>[...items].sort(mode==='pow'?(a,b)=>itemPower(b)-itemPower(a)||itemValue(b)-itemValue(a):mode==='rar'?(a,b)=>itemRank(b)-itemRank(a)||itemValue(b)-itemValue(a):mode==='lvl'?(a,b)=>b.lvl-a.lvl||itemValue(b)-itemValue(a):mode==='new'?(a,b)=>b.t-a.t:(a,b)=>itemValue(b)-itemValue(a));
 
 /* ---------- menu ---------- */
 function goMenu(){
@@ -135,9 +135,51 @@ function renderMenu(){
   pc.append(thumbAvatar(P.eq,4.2),right);
   const b=bathOf(P.eq.bath); $('menuBath').textContent=`${b.name} · sorte ×${b.luck.toFixed(2).replace('.',',')}`+(P.items.length?` · ${P.items.length} Verities`:'')
     +(P.unknown.length?` · ${P.unknown.length} de versão nova (atualize)`:'')+(APP_VER?` · v${APP_VER}`:'');
+  const nb=BOSSES[Math.min(P.world.max,WORLDS.length)-1],done=P.world.beaten.includes(nb.world),tp=teamPower();
+  const mp=$('menuProg'); mp.textContent='';
+  mp.append(document.createTextNode(`Mundo ${P.world.max}/${WORLDS.length} · `));
+  if(done&&P.world.beaten.length>=WORLDS.length)mp.append(el('b',null,'Todos os chefes derrotados!'));
+  else{mp.append(document.createTextNode('Próximo chefe: '));mp.append(el('b',null,nb.name));mp.append(document.createTextNode(` · Poder ${fmt(tp)} / ${fmt(nb.rec)}`))}
   updateBadges(); updateWallets();
 }
-$('mPlay').onclick=()=>{audioInit();goCard1()};
+$('mPlay').onclick=()=>{audioInit();openPanel('journey')};
+function closeAllPanels(){while(panelStack.length)closePanel(panelStack[panelStack.length-1])}
+const petSummary=b=>Object.entries(b).filter(([k,v])=>v>0).map(([k,v])=>ABIL[k].txt(v)).join(' · ');
+
+/* ---------- journey ---------- */
+RENDER.journey=()=>renderJourney();
+function thumbWorld(Wd,em){const c=canvasEl(em);paint(c,100,()=>{circ(50,50,49,Wd.pal.tube);circ(50,50,49,'rgba(0,0,0,.15)');ctx.save();ctx.beginPath();ctx.arc(50,50,49,0,TAU);ctx.clip();for(let i=0;i<4;i++){ctx.strokeStyle=Wd.pal.fold;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(10+i*25,0);ctx.quadraticCurveTo(25+i*25,50,10+i*25,100);ctx.stroke()}ctx.restore();drawVariant(50,56,24,Wd.boss.key,'none',{glow:.3,t:1})});return c}
+function renderJourney(){
+  const tp=teamPower(); $('jPower').textContent='Poder da equipe: '+fmt(tp);
+  $('jHint').textContent='Cada mundo tem Verities que só saem nele. Derrote o chefe pra liberar o próximo mundo e ganhar a Verity dele.';
+  const g=$('jGrid'); g.textContent='';
+  for(const Wd of WORLDS){
+    const B=Wd.boss,open=Wd.n<=P.world.max,beaten=P.world.beaten.includes(Wd.n);
+    const c=el('div','wcard'+(open?'':' locked')+(beaten?' done':'')); c.style.setProperty('--wc',Wd.pal.tube);
+    const top=el('div','wtop'),tt=el('div'); tt.append(el('b',null,`${Wd.n}. ${Wd.name}`),el('small',null,open?Wd.sub:`Derrote o chefe do mundo ${Wd.n-1}`));
+    top.append(thumbWorld(Wd,3.6),tt); c.append(top);
+    const ex=el('div','excl');
+    if(Wd.pool.length){ex.append(document.createTextNode('Exclusivas: '));for(const [k] of Wd.pool){const got=P.items.some(i=>i.v===k);ex.append(thumbVerity(k,'none',2.2,{locked:!got,badge:false}))}}
+    else ex.append(document.createTextNode('As 10 Verities clássicas.'));
+    c.append(ex);
+    const bl=el('div','bline'); bl.append(document.createTextNode(`Chefe: ${B.name} · `)); const pw=el('span',tp>=B.rec?'ok':'bad',`poder recomendado ${fmt(B.rec)}`); bl.append(pw);
+    if(beaten)bl.append(document.createTextNode(' · derrotado ✓')); c.append(bl);
+    if(Wd.special)c.append(el('div','bline',SPECIALS[Wd.special]));
+    const row=el('div','row'),pl=el('button','btn sm','Jogar'),bs=el('button','btn sm danger',beaten?'Chefe de novo':'Enfrentar chefe');
+    pl.disabled=!open; bs.disabled=!open;
+    pl.onclick=()=>{closeAllPanels();goCard1(Wd.n)}; bs.onclick=()=>{closeAllPanels();goBoss(Wd.n)};
+    row.append(pl,bs); c.append(row); g.append(c);
+  }
+}
+function showBossCard(){
+  const B=run.boss; $('bcEyebrow').textContent=`Chefe do mundo ${B.world} · ${run.W.name}`;
+  $('bcName').textContent=B.name; $('bcDesc').textContent=B.desc;
+  const pic=$('bcPic'); pic.textContent=''; pic.append(thumbVerity(B.key,'none',8,{badge:false}));
+  $('bcPower').textContent=`Poder recomendado ${fmt(B.rec)}. Sua equipe: ${fmt(run.power)}.`+(run.power<B.rec?' Vai ser difícil: dê upgrade, funda ou troque a equipe.':' Você está forte o bastante.')+(petSummary(run.pet)?' Pets: '+petSummary(run.pet)+'.':'');
+  showOnly('bossCard');
+}
+$('bcGo').onclick=()=>{audioInit();startP2()};
+$('bcBack').onclick=()=>{goMenu();openPanel('journey')};
 $('mColl').onclick=()=>openPanel('coll');
 $('mShop').onclick=()=>openPanel('shop');
 $('mMarket').onclick=()=>openPanel('market');
@@ -158,10 +200,11 @@ function showCard1(){
   const act=Object.keys(BOOSTS).filter(k=>(P.boosts[k]||0)>0).map(k=>BOOSTS[k].name);
   const b=bathOf(P.eq.bath);
   $('card1Boosts').textContent=`Banheiro: ${b.name} (sorte ×${b.luck.toFixed(2).replace('.',',')}).`+(act.length?` Boosts que vão ser usados agora: ${act.join(', ')}.`:' Nenhum boost ativo.');
+  $('card1World').textContent=`Mundo ${run.world}: ${run.W.name}.`+(run.W.special?' '+SPECIALS[run.W.special]:'')+` Equipe com ${fmt(run.power)} de poder`+(petSummary(run.pet)?': '+petSummary(run.pet)+'.':'.');
   showOnly('card1');
 }
 $('go1').onclick=()=>{audioInit();startP1()};
-$('back1').onclick=()=>goMenu();
+$('back1').onclick=()=>{goMenu();openPanel('journey')};
 function showCard2Screen(){
   const f=run.fiber,c=Math.round(run.p1Comfort),I=INTRUDERS[run.intr]||INTRUDERS.irmao;
   $('c2lead').textContent=`Conforto ${c}%${f>0?` e ${f} fibra${f>1?'s':''}`:', nenhuma fibra'}. A variante já está decidida. A mutação depende de você agora.`;
@@ -173,10 +216,11 @@ function showFail(stage){
   const I=INTRUDERS[run.intr]||INTRUDERS.irmao;
   if(stage===1){$('failEyebrow').textContent='Etapa 1 · O Intestino';$('failTitle').textContent='A cólica venceu';$('failMsg').textContent='Você se contorceu tanto que desistiu. A Verity continua aí dentro, sorrindo.';$('retryBtn').textContent='Tentar de novo'}
   else if(stage===2){$('failEyebrow').textContent='Etapa 2 · O Trono';$('failTitle').textContent='Desmaiou no vaso';$('failMsg').textContent=pick(['Força demais. Acordou vinte minutos depois com a marca do assento na bunda.','A veia estourou o limite. Você viu uma luz amarela. Era só a Verity.']);$('retryBtn').textContent='Tentar o trono de novo'}
+  else if(stage==='boss'){$('failEyebrow').textContent='Chefe · '+run.boss.name;$('failTitle').textContent='O tempo acabou';$('failMsg').textContent=`Faltaram ${fmt(run.boss.hp)} de vida. Mais poder na equipe ajuda: upgrade, fusão ou Verities melhores.`;$('retryBtn').textContent='Lutar de novo'}
   else{$('failEyebrow').textContent='Invasão!';$('failTitle').textContent=`${I.name} entrou no banheiro`;$('failMsg').textContent='A Verity voltou pra dentro de vergonha. A partida foi cancelada e você não ganhou nada.';$('retryBtn').textContent='Jogar de novo'}
   showOnly('fail');
 }
-$('retryBtn').onclick=()=>{audioInit();if(failedStage==='invade')goCard1();else retryStage()};
+$('retryBtn').onclick=()=>{audioInit();if(failedStage==='invade'){if(run.boss)goBoss(run.world);else goCard1(run.world)}else retryStage()};
 $('failMenu').onclick=()=>goMenu();
 function showPause(on){$('pause').hidden=!on;$('pauseBtn').hidden=on||!playing();if(on)$('pResume').focus()}
 $('pauseBtn').onclick=()=>togglePause(true);
@@ -191,6 +235,7 @@ function showResults(r){
   const rc=$('rsRar'); rc.textContent=`${R.name} ${stars(VARS[r.vk].r)}`; rc.style.color=R.col;
   $('rsVal').textContent='Vale '+money(itemValue(r.item));
   const tags=[];if(r.newVar)tags.push('variante nova!');if(r.newMut)tags.push('mutação nova!');if(r.isBest)tags.push('novo recorde!');
+  const bi=r.boss; if(bi){if(bi.first)tags.unshift('primeira vitória');tags.push('+'+money(bi.cash));if(bi.unlocked)tags.push('mundo liberado: '+bi.unlocked);if(bi.newSlot)tags.push('nova vaga de pet!');if(!bi.drop)tags.push('o chefe não deixou a Verity dele dessa vez')}
   $('rsSub').textContent=(tags.length?tags.join(' · ')+' · ':'')+'guardada na coleção';
   $('stCom').textContent=Math.round(run.p1Comfort)+'%'; $('stCombo').textContent='×'+r.maxCombo;
   $('stDoor').textContent=`${run.knockOk}/${run.knockOk+run.knockMiss}`; $('stThrone').textContent=fmt(r.T);
@@ -203,12 +248,12 @@ function showResults(r){
   $('rsFlush').disabled=false;
   $('results').hidden=false; $('rsAgain').focus({preventScroll:true});
 }
-$('rsAgain').onclick=()=>{audioInit();$('results').hidden=true;goCard1()};
+$('rsAgain').onclick=()=>{audioInit();$('results').hidden=true;if(lastResult&&lastResult.boss&&P.world.max>lastResult.world){goMenu();openPanel('journey')}else if(run&&run.boss)goBoss(run.world);else goCard1(run?run.world:1)};
 $('rsMenu').onclick=()=>{$('results').hidden=true;goMenu()};
 $('rsFlush').onclick=()=>{if(flushToilet())$('rsFlush').disabled=true};
 $('rsSell').onclick=()=>{
   const it=lastResult&&P.items.find(x=>x.id===lastResult.item.id); if(!it){toast('Essa Verity não está mais na coleção.');return}
-  confirmDo('Vender pro jogo?',`${fullName(it.v,it.m)} por ${money(sellPrice(it))} (70% do valor). No mercado você pode pedir mais.`,'Vender',()=>{if(act(()=>sellItem(it.id),'Vendida!','coin'))$('rsSell').disabled=true});
+  confirmDo('Vender pro jogo?',`${fullName(it.v,it.m,it.f)} por ${money(sellPrice(it))} (70% do valor). No mercado você pode pedir mais.`,'Vender',()=>{if(act(()=>sellItem(it.id),'Vendida!','coin'))$('rsSell').disabled=true});
 };
 
 /* ---------- collection ---------- */
@@ -220,38 +265,60 @@ function renderColl(){
   const g=$('collGrid'); g.textContent='';
   const items=sortItems(P.items,$('collSort').value),f=featured();
   $('collCount').textContent=`${P.items.length} Verities · valor total ${money(totalValue())}`;
+  renderTeamBar();
   if(!items.length)g.append(el('p','empty','Nenhuma Verity ainda. Jogue uma partida pra começar a coleção.'));
   if(!items.some(i=>i.id===collSel))collSel=items[0]?items[0].id:null;
-  for(const it of items)g.append(itemCard(it,{sel:it.id===collSel,tag:f&&f.id===it.id?'VITRINE':null,onClick:()=>{collSel=it.id;sfx.click();renderColl()}}));
+  for(const it of items)g.append(itemCard(it,{sel:it.id===collSel,tag:P.pets.includes(it.id)?'EQUIPE':f&&f.id===it.id?'VITRINE':null,onClick:()=>{collSel=it.id;sfx.click();renderColl()}}));
   renderCollDetail(P.items.find(i=>i.id===collSel));
 }
 function renderCollDetail(it){
   const d=$('collDetail'); d.textContent=''; ANIM.coll=null;
   if(!it){d.append(el('p','empty','Escolha uma Verity.'));return}
   const c=canvasEl(15,'prev'); d.append(c);
-  ANIM.coll=()=>drawPrev(c,()=>drawVariant(50,(it.v==='lord'||it.v==='exu')?58:52,24,it.v,it.m,{glow:1,lvl:it.lvl}));
+  ANIM.coll=()=>drawPrev(c,()=>drawVariant(50,(it.v==='lord'||it.v==='exu')?58:52,24,it.v,it.m,{glow:1,lvl:it.lvl,f:it.f}));
   ANIM.coll();
   const box=el('div','detail');
-  const nm=el('p','vname',fullName(it.v,it.m)); if(it.m!=='none')nm.style.color=MUT_BY[it.m].col;
-  const chips=el('p','chips'); chips.append(rarChip(it.v),mutChip(it.m));
+  const nm=el('p','vname',fullName(it.v,it.m,it.f)); if(it.f)nm.style.color=FUSE[it.f].col;else if(it.m!=='none')nm.style.color=MUT_BY[it.m].col;
+  const chips=el('p','chips'); chips.append(rarChip(it.v),mutChip(it.m)); if(it.f){const fc=el('span','chip',FUSE[it.f].name+' ×'+FUSE[it.f].pow+' poder');fc.style.color=FUSE[it.f].col;chips.append(fc)}
   const lv=el('div','lvl'); lv.append(el('span',null,`Nível ${it.lvl}/${MAX_LVL} · +8% de valor por nível`)); const xb=el('div','xpbar'),xi=el('i'); xi.style.width=(it.lvl/MAX_LVL*100)+'%'; xb.append(xi); lv.append(xb);
-  box.append(nm,chips,el('p','vname',money(itemValue(it))),lv);
+  const pw=el('p','vname','Poder '+fmt(itemPower(it))); pw.style.color='var(--mint)';
+  const ab=VARS[it.v].abil; box.append(nm,chips,pw,el('p','small',ab?'Como pet · '+abilText([ab[0],ab[1]*(1+(it.f||0)*.5)]):'Sem habilidade de pet.'),el('p','vname',money(itemValue(it))),lv);
   const acts=el('div','actions');
   const up=el('button','btn sm',it.lvl>=MAX_LVL?'Nível máximo':`Upgrade pro Nv ${it.lvl+1} · ${money(upCost(it))}`); up.disabled=it.lvl>=MAX_LVL||P.money<upCost(it);
   up.onclick=()=>act(()=>upgradeItem(it.id),`Nível ${it.lvl+1}!`,'up');
   const sell=el('button','btn ghost sm',`Vender pro jogo · ${money(sellPrice(it))}`);
-  sell.onclick=()=>confirmDo('Vender pro jogo?',`${fullName(it.v,it.m)} Nv ${it.lvl} por ${money(sellPrice(it))} (70% do valor).`,'Vender',()=>act(()=>sellItem(it.id),'Vendida!','coin'));
+  sell.onclick=()=>confirmDo('Vender pro jogo?',`${fullName(it.v,it.m,it.f)} Nv ${it.lvl} por ${money(sellPrice(it))} (70% do valor).`,'Vender',()=>act(()=>sellItem(it.id),'Vendida!','coin'));
   const mk=el('button','btn ghost sm','Anunciar no mercado'); mk.disabled=!online(); if(!online())mk.title=netText();
   mk.onclick=()=>promptListing(it);
   const isF=featured()&&featured().id===it.id;
   const vt=el('button','btn ghost sm',isF?'Está na vitrine':'Pôr na vitrine'); vt.disabled=isF; vt.onclick=()=>{setFeatured(it.id);toast('Na vitrine!');sfx.click()};
-  acts.append(up,sell,mk,vt); box.append(acts);
+  const inTeam=P.pets.includes(it.id),pt=el('button','btn sm',inTeam?'Tirar da equipe':'Pôr na equipe');
+  pt.onclick=()=>{toast(togglePet(it.id));sfx.click()};
+  const grp=fuseGroup(it).length,fu=el('button','btn ghost sm',(it.f||0)>=2?'Fusão máxima':`Fundir 5 iguais (${grp}/5) · ${money(fuseCost(it))}`);
+  fu.disabled=(it.f||0)>=2||grp<5||P.money<fuseCost(it);
+  fu.title='5 Verities iguais (mesma variante, mutação e fusão) viram 1 '+((it.f||0)?'Arco-íris':'Dourada')+', bem mais forte.';
+  fu.onclick=()=>confirmDo('Fundir?',`5 × ${fullName(it.v,it.m,it.f)} viram 1 ${fullName(it.v,it.m,(it.f||0)+1)}. Custa ${money(fuseCost(it))}. O nível fica o maior entre elas.`,'Fundir',()=>{if(act(()=>fuseItem(it.id),'Fusão feita!','up')){collSel=LAST_FUSED;renderColl()}});
+  acts.append(pt,up,fu,sell,mk,vt); box.append(acts);
   if(!online())box.append(el('p','small','Mercado e trocas: '+netText()));
   d.append(box);
 }
+function renderTeamBar(){
+  const tb=$('teamBar'); tb.textContent=''; const tm=team(),n=petSlots();
+  const sl=el('div','slots');
+  for(let i=0;i<5;i++){
+    const it=tm[i],b=el('button','slot');
+    if(i>=n){b.textContent='🔒';b.title='Mais vagas ao derrotar o 3º e o 6º chefe';b.disabled=true}
+    else if(it){b.append(thumbVerity(it.v,it.m,3.2,{badge:false,f:it.f}));b.title=fullName(it.v,it.m,it.f);b.onclick=()=>{collSel=it.id;renderColl()}}
+    else b.textContent='vazio';
+    sl.append(b);
+  }
+  const info=el('div','tinfo'); info.append(el('span',null,'Sua equipe'),el('b',null,'Poder '+fmt(teamPower())),el('span',null,petSummary(petBonus())||'Coloque Verities na equipe pelo painel ao lado.'));
+  const auto=el('button','btn ghost sm','Montar a mais forte'); auto.onclick=()=>{autoTeam();saveProfile();toast('Equipe montada!');sfx.click()};
+  tb.append(sl,info,auto);
+}
 function promptListing(it){
   const inp=el('input','input'); inp.type='number'; inp.min='1'; inp.value=String(itemValue(it)); inp.setAttribute('aria-label','Preço');
-  modal('Anunciar no mercado',[el('p','small',`${fullName(it.v,it.m)} Nv ${it.lvl} · valor ${money(itemValue(it))}. Ela sai da sua coleção enquanto o anúncio estiver aberto.`),inp],
+  modal('Anunciar no mercado',[el('p','small',`${fullName(it.v,it.m,it.f)} Nv ${it.lvl} · valor ${money(itemValue(it))}. Ela sai da sua coleção enquanto o anúncio estiver aberto.`),inp],
     [{label:'Anunciar',fn:async()=>{await listItem(it.id,inp.value);toast('Anúncio publicado!');sfx.coin()}},{label:'Cancelar',cls:'ghost'}]);
 }
 function renderIndex(){
@@ -366,7 +433,7 @@ function renderMarket(){
     for(const l of list){
       const mine=l.seller===NET.uid,c=itemCard(sanitizeItem(l.item),{price:l.price,extra:'vendido por '+String(l.sellerName||'?').slice(0,20)});
       const b=el('button','btn sm',mine?'Seu anúncio':'Comprar'); b.disabled=mine||P.money<l.price;
-      b.onclick=e=>{e.stopPropagation();confirmDo('Comprar?',`${fullName(l.item.v,l.item.m)} Nv ${l.item.lvl} por ${money(l.price)}.`,'Comprar',async()=>{await buyListing(l);toast('Comprada! Já está na sua coleção.');sfx.buy();loadMarket()})};
+      b.onclick=e=>{e.stopPropagation();confirmDo('Comprar?',`${fullName(l.item.v,l.item.m,l.item.f)} Nv ${l.item.lvl} por ${money(l.price)}.`,'Comprar',async()=>{await buyListing(l);toast('Comprada! Já está na sua coleção.');sfx.buy();loadMarket()})};
       c.append(b); g.append(c);
     }
   }else{
@@ -416,7 +483,7 @@ function renderFriends(){
     for(const f of friendsCache||[]){
       const row=el('div','lrow'); row.append(thumbAvatar(f.eq,3.2));
       const top=f.items.reduce((b,i)=>!b||itemValue(i)>itemValue(b)?i:b,null);
-      const nm=el('span','lname'); nm.append(el('b',null,f.username),el('small',null,`Nível ${f.level} · ${f.items.length} Verities · recorde ${fmt(f.best)}${top?` · melhor: ${fullName(top.v,top.m)}`:''}`)); row.append(nm);
+      const nm=el('span','lname'); nm.append(el('b',null,f.username),el('small',null,`Nível ${f.level} · ${f.items.length} Verities · recorde ${fmt(f.best)}${top?` · melhor: ${fullName(top.v,top.m,top.f)}`:''}`)); row.append(nm);
       const bt=el('div','row'); const v=el('button','btn sm','Ver coleção e trocar'),x=el('button','btn ghost sm','Remover');
       v.onclick=()=>openProfile(f.uid); x.onclick=()=>confirmDo('Remover amigo?',`${f.username} sai da sua lista.`,'Remover',()=>{removeFriend(f.uid);friendsCache=(friendsCache||[]).filter(y=>y.uid!==f.uid);renderFriends()});
       bt.append(v,x); row.append(bt); fl.append(row);
@@ -466,7 +533,8 @@ function renderProfile(){
   const g=$('pfGrid'); g.textContent=''; const info=$('pfInfo'); info.textContent='';
   if(!pf){$('pfTitle').textContent='Carregando...';ANIM.profile=null;return}
   $('pfTitle').textContent=pf.username;
-  info.append(el('p','vname',pf.username),el('p','small',`Nível ${pf.level} · recorde ${fmt(pf.best)} · ${money(pf.money)}`),el('p','small',`${pf.items.length} Verities · coleção vale ${money(totalValue(pf.items))}`));
+  const tmr=el('div','row'); for(const it of pf.pets)tmr.append(thumbVerity(it.v,it.m,3,{badge:false,f:it.f}));
+  info.append(el('p','vname',pf.username),el('p','small',`Nível ${pf.level} · Mundo ${pf.world} · Poder ${fmt(pf.power)}`),tmr,el('p','small',`Recorde ${fmt(pf.best)} · ${money(pf.money)}`),el('p','small',`${pf.items.length} Verities · coleção vale ${money(totalValue(pf.items))}`));
   const items=sortItems(pf.items,'val');
   if(!items.length)g.append(el('p','empty','Coleção vazia.'));
   for(const it of items)g.append(itemCard(it,{sel:pfSel.has(it.id),onClick:()=>{pfSel.has(it.id)?pfSel.delete(it.id):pfSel.add(it.id);sfx.click();renderProfile()}}));
@@ -493,7 +561,7 @@ async function loadRank(){if(!online()||rkLoading)return;rkLoading=true;renderRa
 function renderRank(){
   const box=$('rkList'); box.textContent=''; $('rkNotice').textContent=online()?'':netText();
   if(!online()){
-    const row=el('div','lrow rkrow me'); fillRankRow(row,1,{username:P.username||'Você',level:level(),best:P.best,money:P.money,totalValue:totalValue(),bestV:featured(),eq:P.eq}); box.append(row); return;
+    const row=el('div','lrow rkrow me'); fillRankRow(row,1,{username:P.username||'Você',level:level(),power:teamPower(),best:P.best,money:P.money,totalValue:totalValue(),bestV:featured(),eq:P.eq}); box.append(row); return;
   }
   const list=rkData[TAB.rank];
   if(!list){box.append(el('p','empty',rkLoading?'Carregando ranking...':'Sem dados.'));return}
@@ -505,8 +573,8 @@ function fillRankRow(row,pos,r){
   row.append(el('span','pos',String(pos)),thumbAvatar(r.eq,3));
   const nm=el('span','lname'); nm.append(el('b',null,r.username),el('small',null,`Nível ${r.level}`)); row.append(nm);
   const col=(k,lab,v)=>{const c=el('span',hl(k));c.append(el('small',null,lab),document.createTextNode(v));return c};
-  row.append(col('xp','Nível',String(r.level)),col('best','Recorde',fmt(r.best)),col('money','Dinheiro',money(r.money)),col('totalValue','Coleção',money(r.totalValue)));
-  const bv=el('span','bv'); if(r.bestV){bv.append(thumbVerity(r.bestV.v,r.bestV.m,2.6,{badge:false}),document.createTextNode(fullName(r.bestV.v,r.bestV.m)))}else bv.textContent='—';
+  row.append(col('xp','Nível',String(r.level)),col('power','Poder',fmt(r.power||0)),col('best','Recorde',fmt(r.best)),col('money','Dinheiro',money(r.money)),col('totalValue','Coleção',money(r.totalValue)));
+  const bv=el('span','bv'); if(r.bestV){bv.append(thumbVerity(r.bestV.v,r.bestV.m,2.6,{badge:false}),document.createTextNode(fullName(r.bestV.v,r.bestV.m,r.bestV.f)))}else bv.textContent='—';
   row.append(bv);
 }
 

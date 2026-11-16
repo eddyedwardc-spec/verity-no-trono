@@ -150,7 +150,7 @@ canvas.prev{width:15em;height:15em}
 .lname{display:flex;flex-direction:column;min-width:0;text-align:left}
 .lname b{font-family:var(--display);font-weight:400;font-size:1.15em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lname small{font-size:.78em;font-weight:800;opacity:.78}
-.rkrow{grid-template-columns:2em auto minmax(0,1.4fr) repeat(4,minmax(0,1fr)) minmax(0,1.4fr)}
+.rkrow{grid-template-columns:2em auto minmax(0,1.3fr) repeat(5,minmax(0,1fr)) minmax(0,1.4fr)}
 .rkrow .c{font-family:var(--display);font-variant-numeric:tabular-nums;text-align:right}
 .rkrow .c small{display:block;font:900 .62em var(--body);color:var(--mint);letter-spacing:.08em;text-transform:uppercase}
 .rkrow .hl{color:var(--verity)}
@@ -206,3 +206,25 @@ canvas.prev{width:15em;height:15em}
 .mute{position:absolute;top:.6em;right:.6em;z-index:3;font:900 .8em var(--body);background:rgba(0,0,0,.55);color:var(--porcelain);border:0;border-radius:999px;padding:.45em .9em;cursor:pointer}
 .mute kbd{font-size:.8em}
 @media (prefers-reduced-motion:reduce){.knock{animation:none}.btn{transition:none}}
+
+/* Poder e Jornada */
+.mprog{margin:0;font-weight:900;font-size:.95em;color:var(--mint);background:rgba(0,0,0,.3);padding:.4em .8em;border-radius:.6em;line-height:1.35}
+.mprog b{color:var(--verity)}
+.wgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7em}
+.wcard{display:flex;flex-direction:column;gap:.45em;background:var(--card);border-radius:.9em;padding:.7em;box-shadow:inset 0 .35em 0 var(--wc,#555);min-width:0}
+.wcard.locked{opacity:.5}
+.wcard.done{box-shadow:inset 0 .35em 0 var(--wc,#555),inset 0 0 0 .12em rgba(95,227,154,.5)}
+.wcard .wtop{display:flex;gap:.6em;align-items:center}
+.wcard .wtop b{font-family:var(--display);font-weight:400;font-size:1.15em;line-height:1.05;display:block}
+.wcard .wtop small{font-size:.74em;font-weight:800;opacity:.75;display:block}
+.wcard .excl{display:flex;gap:.25em;align-items:center;flex-wrap:wrap;font-size:.72em;font-weight:900;opacity:.9}
+.wcard .bline{font-size:.78em;font-weight:800;line-height:1.3}
+.wcard .bline .ok{color:var(--ok)}.wcard .bline .bad{color:#ff9aa3}
+.wcard .row{justify-content:stretch}.wcard .row .btn{flex:1}
+.team{display:flex;gap:.6em;align-items:center;background:rgba(255,210,31,.08);border-radius:.8em;padding:.5em .7em;flex-wrap:wrap;box-shadow:inset 0 0 0 .1em rgba(255,210,31,.25)}
+.team .slots{display:flex;gap:.35em}
+.team .slot{width:3.6em;height:3.6em;border-radius:.6em;background:rgba(0,0,0,.3);display:grid;place-items:center;font-weight:900;font-size:.7em;opacity:.9;cursor:pointer;border:0;color:var(--porcelain)}
+.team .tinfo{display:flex;flex-direction:column;gap:.15em;min-width:0;flex:1;font-size:.82em;font-weight:800}
+.team .tinfo b{font-family:var(--display);font-weight:400;font-size:1.4em;color:var(--verity)}
+.bchead{display:flex;gap:1.2em;align-items:center;text-align:left;max-width:46em}
+.icard .pow{color:var(--mint)}
