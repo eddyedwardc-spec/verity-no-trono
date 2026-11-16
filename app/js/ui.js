@@ -296,9 +296,9 @@ function renderCollDetail(it){
 function renderTeamBar(){
   const tb=$('teamBar'); tb.textContent=''; const tm=team(),n=petSlots();
   const sl=el('div','slots');
-  for(let i=0;i<5;i++){
+  for(let i=0;i<MAX_PETS;i++){
     const it=tm[i],b=el('button','slot');
-    if(i>=n){b.textContent='🔒';b.title=_t("Mais vagas ao derrotar o 3º e o 6º chefe");b.disabled=true}
+    if(i>=n){b.textContent='🔒';b.title=_t("Abre ao derrotar {0} chefes",PET_AT[i-3]);b.disabled=true}
     else if(it){b.append(thumbVerity(it.v,it.m,3.2,{badge:false,f:it.f}));b.title=fullName(it.v,it.m,it.f);b.onclick=()=>{collSel=it.id;renderColl()}}
     else b.textContent=_t("vazio");
     sl.append(b);

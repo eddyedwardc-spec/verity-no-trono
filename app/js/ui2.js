@@ -127,14 +127,20 @@ function renderJourney(){
   if(!jRegion||jRegion>curReg)jRegion=curReg;
   $('jPower').textContent=_t("Poder da equipe: ")+fmt(tp)+(P.rebirths?_t(" (×{0} renascimento)",rbPow().toFixed(1).replace('.',DEC)):'');
   const rb=$('jRebirth'); rb.disabled=!canRebirth(); rb.textContent=P.rebirths?_t("Renascer ({0})",P.rebirths):_t("Renascer"); rb.title=canRebirth()?'':_t("Derrote o chefe do mundo {0} pra renascer.",rebirthReq());
+  const jD=DIMENSIONS[REGIONS[jRegion-1].dim-1],dm=$('jDims'); dm.textContent='';
+  for(const D of DIMENSIONS){
+    const tot=(D.last-D.first+1)*5,beaten=WORLDS.filter(w=>w.dim===D.n&&P.world.beaten.includes(w.n)).length,open=D.first<=curReg;
+    const b=el('button','pick'+(beaten===tot?' done':''),`${D.n}. ${D.short} ${beaten}/${tot}`); b.title=D.name; b.disabled=!open; b.setAttribute('aria-pressed',D===jD?'true':'false');
+    b.onclick=()=>{jRegion=curReg>=D.first&&curReg<=D.last?curReg:D.last;sfx.click();renderJourney()}; dm.append(b);
+  }
   const rg=$('jRegions'); rg.textContent='';
-  for(const R of REGIONS){
+  for(const R of REGIONS.filter(R=>R.dim===jD.n)){
     const beaten=WORLDS.filter(w=>w.region===R.n&&P.world.beaten.includes(w.n)).length,open=R.n<=curReg;
-    const b=el('button','pick'+(beaten===5?' done':''),`${R.n}. ${R.name} ${beaten}/5`); b.disabled=!open; b.setAttribute('aria-pressed',R.n===jRegion?'true':'false');
+    const b=el('button','pick'+(beaten===5?' done':''),`${R.n-jD.first+1}. ${R.name} ${beaten}/5`); b.disabled=!open; b.setAttribute('aria-pressed',R.n===jRegion?'true':'false');
     b.onclick=()=>{jRegion=R.n;sfx.click();renderJourney()}; rg.append(b);
   }
   const R=REGIONS[jRegion-1];
-  $('jHint').textContent=_t("{0}: {1} {2} Cada fase tem um chefe; a Fase V é a forma final, que deixa a Verity própria dele.",R.name,R.sub,R.special?SPECIALS[R.special]:'')+(canRebirth()?'':_t(" Renascer libera no mundo {0}.",rebirthReq()));
+  $('jHint').textContent=_t("{0}: {1} {2} Cada fase tem um chefe; a Fase V é a forma final, que deixa a Verity própria dele.",R.name,R.sub,R.special?SPECIALS[R.special]:'')+(jD.mutMin?_t(" Na {0}, o que os chefes deixam vem no mínimo {1}.",jD.name,MUT_BY[jD.mutMin].name):'')+(canRebirth()?'':_t(" Renascer libera no mundo {0}.",rebirthReq()));
   const g=$('jGrid'); g.textContent='';
   for(const Wd of WORLDS.filter(w=>w.region===jRegion)){
     const B=Wd.boss,open=Wd.n<=P.world.max,beaten=P.world.beaten.includes(Wd.n);
@@ -156,10 +162,10 @@ $('jRebirth').onclick=()=>{
   if(!canRebirth()){toast(_t("Derrote o chefe do mundo {0} primeiro.",rebirthReq()));return}
   const n=(P.rebirths||0)+1;
   modal(_t("Renascer?"),[
-    el('p','small',_t("Você perde: {0}, os banheiros comprados e o progresso nos mundos (volta pro Mundo 1).",money(P.money))),
+    el('p','small',_t("Você perde: {0}, os banheiros comprados e o progresso nos mundos (volta pro Mundo {1}).",money(P.money),rebirthStart(n))),
     el('p','small',_t("Você mantém: todas as Verities, equipe, Museu, cosméticos, invasores, conquistas, Rolos e boosts.")),
-    el('p','notice',_t("Renascimento {0}: poder ×{1}, renda do Museu ×{2}, sorte ×{3}, dinheiro dos chefes ×{4}, +{5} {6} e ★ no nome.",n,(1+.3*n).toFixed(1).replace('.',DEC),(1+.5*n).toFixed(1).replace('.',DEC),(1+.1*n).toFixed(1).replace('.',DEC),(1+.25*n).toFixed(2).replace('.',DEC),25*n,ROLO))
-  ],[{label:_t("Renascer"),cls:'danger',fn:()=>{const e=doRebirth();if(e)throw new Error(e);sfx.reveal(6);toast(_t("Renasceu! ★{0}",P.rebirths));jRegion=1;renderJourney()}},{label:_t("Cancelar"),cls:'ghost'}]);
+    el('p','notice',_t("Renascimento {0}: poder ×{1}, renda do Museu ×{2}, sorte ×{3}, dinheiro dos chefes ×{4}, +{5} {6} e ★ no nome.",n,(1+.5*n).toFixed(1).replace('.',DEC),(1+.5*n).toFixed(1).replace('.',DEC),(1+.1*n).toFixed(1).replace('.',DEC),(1+.25*n).toFixed(2).replace('.',DEC),25*n,ROLO))
+  ],[{label:_t("Renascer"),cls:'danger',fn:()=>{const e=doRebirth();if(e)throw new Error(e);sfx.reveal(6);toast(_t("Renasceu! ★{0}",P.rebirths));jRegion=null;renderJourney()}},{label:_t("Cancelar"),cls:'ghost'}]);
 };
 
 /* ---------- boot ---------- */

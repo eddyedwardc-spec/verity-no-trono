@@ -56,7 +56,7 @@ function initP1(){
   const objs=[],Wd=run.W; let x=900;
   while(x<P1LEN-150){
     const r=Math.random(); let type=r<.44?'colica':r<.74?'fibra':r<.88?'gas':'cafe';
-    if(Wd.special&&Math.random()<Math.min(.32,(Wd.special.startsWith('mix')?.2:.15)+Wd.fase*.015))type=Wd.special==='mix'?pick(['acido','radio','gelo','pimenta','asteroide','bug']):Wd.special==='mix2'?pick(SPECIAL_KEYS):Wd.special;
+    if(Wd.special&&Math.random()<Math.min(.22,(Wd.special.startsWith('mix')?.14:.1)+Wd.fase*.012))type=Wd.special==='mix'?pick(['acido','radio','gelo','pimenta','asteroide','bug']):Wd.special==='mix2'?pick(SPECIAL_KEYS):Wd.special;
     const c=tubeC(x),h=tubeH(x);
     objs.push({type,x,y:clamp(c+rand(-.72,.72)*(h-30),70,H-70),r:type==='colica'?23:type==='gas'?27:type==='asteroide'?26:SPECIAL_KEYS.includes(type)?21:17,seed:rand(0,6),dead:false});
     x+=(rand(150,240)-(x/P1LEN)*45)*Wd.dense;
@@ -387,14 +387,15 @@ function startFinale(){
   if(B){
     const first=!P.world.beaten.includes(B.world),drop=first||Math.random()<.25;
     vk=drop?(B.drop||regionDrop(B)):rollWorldVariant(run.world,80,varLuck());
-    const cash=Math.round(300*Math.pow(1.13,B.world)*(first?1:.3)*rbCash()*evMods().money); P.money+=cash;
+    const cash=Math.round(300*Math.pow(1.13,Math.min(B.world,WORLD_CAP))*Math.pow(1.03,Math.max(0,B.world-WORLD_CAP))*(first?1:.3)*rbCash()*evMods().money); P.money+=cash;
     track('boss');
     const slotsBefore=petSlots(),maxBefore=P.world.max;
     P.world.max=Math.min(WORLDS.length,Math.max(P.world.max,B.world+1));P.stats.maxWorld=Math.max(P.stats.maxWorld||0,P.world.max);
-    if(first){P.world.beaten.push(B.world);P.world.max=Math.min(WORLDS.length,Math.max(P.world.max,B.world+1));P.stats.maxBeaten=Math.max(P.stats.maxBeaten||0,P.world.beaten.length);P.stats.maxWorld=Math.max(P.stats.maxWorld||0,P.world.max);if(B.world===WORLDS.length)P.stats.beat60=1;if(B.fase===5)announce(_t("derrotou {0} (mundo {1})!",B.name.replace(_t(" · Forma Final"),''),B.world))}
+    if(first){P.world.beaten.push(B.world);P.world.max=Math.min(WORLDS.length,Math.max(P.world.max,B.world+1));P.stats.maxBeaten=Math.max(P.stats.maxBeaten||0,P.world.beaten.length);P.stats.maxWorld=Math.max(P.stats.maxWorld||0,P.world.max);if(B.world===60)P.stats.beat60=1;if(B.world===WORLDS.length)P.stats.beat260=1;if(B.fase===5)announce(_t("derrotou {0} (mundo {1})!",B.name.replace(_t(" · Forma Final"),''),B.world))}
     bossInfo={first,drop,cash,name:B.name,world:B.world,unlocked:P.world.max>maxBefore?WORLDS[P.world.max-1].name:null,newSlot:petSlots()>slotsBefore};
   }else{const ev=evMods().vars;vk=ev.length&&Math.random()<.08?pick(ev):rollWorldVariant(run.world,run.p1Comfort,varLuck())}
-  const mk=rollMut(T,mutLuck());
+  let mk=rollMut(T,mutLuck());
+  if(bossInfo&&bossInfo.drop&&run.W.mutMin&&MUT_BY[mk].i<MUT_BY[run.W.mutMin].i)mk=run.W.mutMin;
   track('runs'); track('combo',q.maxCombo); if(VARS[vk].r>=2)track('rare');
   if(VARS[vk].r>=5||MUT_BY[mk].i>=6||VARS[vk].ev)announce(_t("tirou {0}!",fullName(vk,mk)));
   const newVar=!P.items.some(i=>i.v===vk),newMut=mk!=='none'&&!P.items.some(i=>i.m===mk);

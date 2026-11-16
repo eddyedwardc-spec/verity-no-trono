@@ -23,13 +23,16 @@ function activeEvents(d=new Date()){
 function evMods(){const ev=activeEvents();return{mut:ev.reduce((m,e)=>m*(e.mut||1),1),money:ev.reduce((m,e)=>m*(e.money||1),1),vars:ev.map(e=>e.v).filter(Boolean),list:ev}}
 
 /* ---------- rebirth ---------- */
-const rbPow=()=>1+.3*(P.rebirths||0), rbIncome=()=>1+.5*(P.rebirths||0), rbLuck=()=>1+.1*(P.rebirths||0), rbCash=()=>1+.25*(P.rebirths||0);
-const rebirthReq=()=>10+10*(P.rebirths||0);
+const rbPow=()=>1+.5*(P.rebirths||0), rbIncome=()=>1+.5*(P.rebirths||0), rbLuck=()=>1+.1*(P.rebirths||0), rbCash=()=>1+.25*(P.rebirths||0);
+// each rebirth needs a further world (8 more each time) until the very last one; after that it is always world 260
+const rebirthReq=()=>Math.min(WORLDS.length,10+8*(P.rebirths||0));
+// after rebirth n you start at world 1+5×(n−1): later rebirths skip the worlds that are trivial by then
+const rebirthStart=n=>clamp(1+5*(n-1),1,200);
 const canRebirth=()=>P.world.beaten.includes(rebirthReq())||P.world.max>rebirthReq();
 function doRebirth(){
   if(!canRebirth())return _t("Derrote o chefe do mundo {0} primeiro.",rebirthReq());
   P.rebirths=(P.rebirths||0)+1; const gift=25*P.rebirths; P.rolos+=gift;
-  P.money=0; P.owned.bath=[1]; P.eq.bath=1; P.world={max:1,beaten:[],cur:1};
+  P.money=0; P.owned.bath=[1]; P.eq.bath=1; const st=rebirthStart(P.rebirths); P.world={max:st,beaten:Array.from({length:st-1},(_,i)=>i+1),cur:st};
   P.stats.rebirths=P.rebirths; announce(_t("renasceu pela {0}ª vez!",P.rebirths)); checkAch(); saveProfile(); return '';
 }
 
@@ -168,6 +171,9 @@ const ACH=[
   ['upgrade100',_t("Personal Trainer"),_t("Dê 100 upgrades."),()=>P.stats.upgrades||0,100,25],
   ['god',_t("Visto por Deus"),_t("Tenha uma Verity God."),()=>has(i=>i.m==='god')?1:0,1,100],
   ['divino',_t("Divindade"),_t("Tenha uma Verity Divina."),()=>has(i=>VARS[i.v].r===6)?1:0,1,100],
+  ['mundo100',_t("Viajante Dimensional"),_t("Chegue ao mundo 100."),()=>Math.max(P.world.max,P.stats.maxWorld||0),100,80],
+  ['mundo260',_t("Fim de Todas as Dimensões"),_t("Derrote o chefe do mundo 260."),()=>P.world.beaten.includes(260)||P.stats.beat260?1:0,1,500],
+  ['renasce15',_t("Imortal"),_t("Renasça 15 vezes."),()=>P.rebirths||0,15,150],
   ['albu',_t("Lenda Viva"),_t("Tenha o Albuquerque."),()=>has(i=>i.v==='albuquerque')?1:0,1,300],
   ['exu',_t("Laroyê"),_t("Tenha um Exu."),()=>has(i=>i.v==='exu')?1:0,1,30],
   ['col20',_t("Colecionador"),_t("Encontre 20 variantes diferentes."),()=>new Set(P.items.map(i=>i.v)).size,20,30],

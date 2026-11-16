@@ -223,7 +223,7 @@ canvas.prev{width:15em;height:15em}
 .wcard .row{justify-content:stretch}.wcard .row .btn{flex:1}
 .team{display:flex;gap:.6em;align-items:center;background:rgba(255,210,31,.08);border-radius:.8em;padding:.5em .7em;flex-wrap:wrap;box-shadow:inset 0 0 0 .1em rgba(255,210,31,.25)}
 .team .slots{display:flex;gap:.35em}
-.team .slot{width:3.6em;height:3.6em;border-radius:.6em;background:rgba(0,0,0,.3);display:grid;place-items:center;font-weight:900;font-size:.7em;opacity:.9;cursor:pointer;border:0;color:var(--porcelain)}
+.team .slot{width:3.2em;height:3.2em;border-radius:.6em;background:rgba(0,0,0,.3);display:grid;place-items:center;font-weight:900;font-size:.7em;opacity:.9;cursor:pointer;border:0;color:var(--porcelain)}
 .team .tinfo{display:flex;flex-direction:column;gap:.15em;min-width:0;flex:1;font-size:.82em;font-weight:800}
 .team .tinfo b{font-family:var(--display);font-weight:400;font-size:1.4em;color:var(--verity)}
 .bchead{display:flex;gap:1.2em;align-items:center;text-align:left;max-width:46em}
@@ -305,3 +305,8 @@ canvas.prev{width:15em;height:15em}
 .chatquick .btn{font-size:1em;padding:.15em .45em}
 .lname .lastmsg{opacity:.6;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .igrid.share{max-height:24em;overflow-y:auto}
+
+/* 1.6: dimensions in the Journey */
+.regions.dims{margin-bottom:.35em}
+.regions.dims .pick{font-size:.9em;font-family:var(--display)}
+.regions.dims .pick[aria-pressed="true"]{background:var(--verity);color:var(--ink)}

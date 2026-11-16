@@ -44,7 +44,7 @@ function sanitizeProfile(d){
   if(d.owned&&typeof d.owned==='object')for(const c of Object.keys(p.owned))if(Array.isArray(d.owned[c]))p.owned[c]=d.owned[c].filter(x=>typeof x==='string'||typeof x==='number');
   if(d.eq&&typeof d.eq==='object')for(const c of Object.keys(p.eq))if(d.eq[c]!=null)p.eq[c]=d.eq[c];
   if(d.boosts&&typeof d.boosts==='object')for(const k of Object.keys(BOOSTS))p.boosts[k]=Math.max(0,Math.round(+d.boosts[k]||0));
-  if(Array.isArray(d.pets))p.pets=d.pets.filter(x=>typeof x==='string'&&p.items.some(i=>i.id===x)).slice(0,5);
+  if(Array.isArray(d.pets))p.pets=d.pets.filter(x=>typeof x==='string'&&p.items.some(i=>i.id===x)).slice(0,MAX_PETS);
   if(d.world&&typeof d.world==='object'){p.world.max=clamp(Math.round(+d.world.max||1),1,WORLDS.length);p.world.cur=clamp(Math.round(+d.world.cur||1),1,p.world.max);if(Array.isArray(d.world.beaten))p.world.beaten=[...new Set(d.world.beaten.map(Number).filter(n=>n>=1&&n<=WORLDS.length))];if(p.world.beaten.length)p.world.max=clamp(Math.max(p.world.max,Math.max(...p.world.beaten)+1),1,WORLDS.length)}
   if(Array.isArray(d.friends))p.friends=d.friends.filter(x=>typeof x==='string').slice(0,200);
   if(Array.isArray(d.settled))p.settled=d.settled.filter(x=>typeof x==='string').slice(-400);
@@ -90,7 +90,8 @@ const mostValuable=()=>P.items.reduce((b,i)=>!b||itemValue(i)>itemValue(b)?i:b,n
 const rarest=()=>P.items.reduce((b,i)=>!b||itemRank(i)>itemRank(b)?i:b,null);
 const totalValue=(items=P.items)=>items.reduce((s,i)=>s+itemValue(i),0);
 const level=()=>levelOf(P.xp);
-const petSlots=()=>{const b=Math.max(P.world.beaten.length,P.stats.maxBeaten||0);return 3+[3,6,20,40].filter(n=>b>=n).length};
+const MAX_PETS=7,PET_AT=[3,6,20,40]; // pet slots open at these many bosses beaten
+const petSlots=()=>{const b=Math.max(P.world.beaten.length,P.stats.maxBeaten||0);return 3+PET_AT.filter(n=>b>=n).length};
 const team=()=>P.pets.map(id=>P.items.find(i=>i.id===id)).filter(Boolean).slice(0,petSlots());
 const teamPower=(items=team())=>Math.round(items.reduce((s,i)=>s+itemPower(i),0)*rbPow());
 function petBonus(items=team()){

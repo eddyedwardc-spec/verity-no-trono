@@ -118,20 +118,56 @@ for(const R of REGIONS){const b=R.boss;VARS[b.key]={name:b.name,r:5,base:0,col:b
 const BOSSES=REGIONS.map(R=>R.boss);
 const MOD_TXT={fast:_t("a faixa corre rápido"),heal:_t("ele se cura fora da faixa"),shrink:_t("a faixa é estreita"),strain:_t("a veia enche rápido"),knocks:_t("a porta não para"),invert:_t("os controles invertem"),jump:_t("a faixa pula de lugar")};
 const ROMAN=['I','II','III','IV','V'];
+
+/* 1.6: four more dimensions after the first 60 worlds (worlds 61–260). Each one revisits 10 regions with new colors,
+   stronger bosses and better drops: every region boss drops its Verity with at least the dimension's mutation,
+   and the last boss of each dimension drops that dimension's own Verity. */
+const DIM_VARS={
+  fantasmity:{name:_t("Fantasmity"),r:6,base:80000,b:1,col:['#ffffff','#cfc8ff','#7a6ad8'],ink:'#3a2a7a',eyes:'glow',mouth:'open',acc:['drips','smoke'],abil:['all',.22]},
+  infernity:{name:'Infernity',r:6,base:100000,b:1,col:['#ffb0a0','#e8231a','#4a0400'],eyes:'angry',mouth:'fangs',acc:['horns','fire'],abil:['dmg',.9]},
+  caosity:{name:_t("Caosity"),r:6,base:130000,b:1,col:['#b0fff0','#19e6c8','#0a5a50'],eyes:'pixel',mouth:'zigzag',acc:['spikes','glitch'],abil:['all',.26]},
+  eternity:{name:'Eternity',r:6,base:180000,b:1,col:['#fffbe0','#ffd23a','#b08a00'],eyes:'star',mouth:'smile',acc:['wings','radiant','halo'],abil:['all',.3]}
+};
+for(const [k,v] of Object.entries(DIM_VARS)){VARS[k]={...v,gen:true,glow:v.col[1].replace(/^#(..)(..)(..)$/,(m,a,b,c)=>`${parseInt(a,16)},${parseInt(b,16)},${parseInt(c,16)}`)};VAR_ORDER.push(k)}
+const DIMENSIONS=[
+  {n:1,name:_t("Dimensão Original"),short:_t("Original")},
+  {n:2,name:_t("Dimensão do Além"),short:_t("Além"),fmt:s=>_t("{0} do Além",s),tint:'#7a5cff',mutMin:'diamante',regs:[1,2,3,4,5,6,7,8,9,12],drop:'fantasmity'},
+  {n:3,name:_t("Dimensão do Inferno"),short:_t("Inferno"),fmt:s=>_t("{0} do Inferno",s),tint:'#ff3a1a',mutMin:'platina',regs:[2,3,4,5,6,7,8,10,11,12],drop:'infernity'},
+  {n:4,name:_t("Dimensão do Caos"),short:_t("Caos"),fmt:s=>_t("{0} do Caos",s),tint:'#19e6c8',mutMin:'galaxy',regs:[1,3,4,6,7,8,9,10,11,12],drop:'caosity'},
+  {n:5,name:_t("Dimensão do Infinito"),short:_t("Infinito"),fmt:s=>_t("{0} do Infinito",s),tint:'#ffd23a',mutMin:'hacker',regs:[2,3,5,6,7,8,9,10,11,12],drop:'eternity'}
+];
+// blends a palette color (hex or rgba) toward the dimension's tint
+function tintCol(c,tint,amt){
+  const m=/^rgba?\(([^)]+)\)$/.exec(c),T=hexc(tint);
+  if(!m)return mix(c,tint,amt);
+  const p=m[1].split(',').map(Number);return `rgba(${p.slice(0,3).map((v,i)=>Math.round(lerp(v,T[i],amt))).join(',')},${p[3]??1})`;
+}
+for(const R of REGIONS)R.dim=1,R.base=R.n;
+for(const D of DIMENSIONS.slice(1))D.regs.forEach((bi,i)=>{
+  const B=REGIONS[bi-1],last=i===D.regs.length-1,pal={};
+  for(const [k,c] of Object.entries(B.pal))pal[k]=tintCol(c,D.tint,.42);
+  REGIONS.push({...B,n:REGIONS.length+1,dim:D.n,base:bi,name:D.fmt(B.name),pal,
+    boss:{...B.boss,name:D.fmt(B.boss.name),drop:last?D.drop:B.boss.drop,desc:B.boss.desc}});
+});
+for(const D of DIMENSIONS){const rs=REGIONS.filter(R=>R.dim===D.n);D.first=rs[0].n;D.last=rs[rs.length-1].n}
+const WORLD_CAP=60; // after world 60 the reflexes stop getting harder; only boss power keeps climbing
+const recOf=n=>Math.round(30*Math.pow(1.17,Math.min(n,WORLD_CAP)-1)*Math.pow(1.015,Math.max(0,n-WORLD_CAP)));
 const WORLDS=[];
 REGIONS.forEach((R,ri)=>{for(let f=1;f<=5;f++){
-  const n=ri*5+f,rec=Math.round(30*Math.pow(1.17,n-1));
+  const n=ri*5+f,rec=recOf(n),bi=R.base-1,D=DIMENSIONS[R.dim-1];
   let mods=[R.boss.mod];
-  if(f>=3)mods.push(['fast','shrink','strain','heal'][ri%4]);
+  if(f>=3)mods.push(['fast','shrink','strain','heal'][bi%4]);
   if(f===5)mods.push('jump','knocks');
-  if(ri>=8)mods.push('strain');
+  if(bi>=8)mods.push('strain');
   mods=[...new Set(mods)].filter(m=>m!=='none');
   const boss={key:R.boss.key,name:f<5?_t("{0} · Fase {1}",R.boss.name,f):_t("{0} · Forma Final",R.boss.name),drop:f===5?R.boss.drop:null,rec,hp:Math.round((rec*.1+10)*1.25*28),limit:45,mods,world:n,region:R.n,fase:f,
     desc:`${R.boss.desc} ${mods.length?_t("Aqui ")+mods.map(m=>MOD_TXT[m]).join(', ')+'.':''}`};
-  WORLDS.push({n,region:R.n,fase:f,name:`${R.name} ${ROMAN[f-1]}`,rname:R.name,sub:R.sub,special:R.special,pal:R.pal,pool:R.pool,boss,
-    speed:Math.min(2.6,1+.03*(n-1)),dmg:Math.min(4,1+.06*(n-1)),dense:Math.max(.55,1-.01*(n-1)),bonus:1+.08*(n-1),
-    narrow:Math.max(.62,1-.007*(n-1)),zspeed:Math.min(2.2,1+.025*(n-1)),zwidth:Math.max(.55,1-.008*(n-1))});
+  // gentler curve: speed, obstacles and damage level off early so every world stays playable
+  WORLDS.push({n,region:R.n,dim:R.dim,mutMin:D.mutMin||null,fase:f,name:`${R.name} ${ROMAN[f-1]}`,rname:R.name,sub:R.sub,special:R.special,pal:R.pal,pool:R.pool,boss,
+    speed:Math.min(1.45,1+.015*(n-1)),dmg:Math.min(2.2,1+.025*(n-1)),dense:Math.max(.85,1-.005*(n-1)),bonus:1+.08*(n-1),
+    narrow:Math.max(.8,1-.004*(n-1)),zspeed:Math.min(1.5,1+.012*(n-1)),zwidth:Math.max(.78,1-.005*(n-1))});
 }});
 const SPECIALS={acido:_t("Poça de ácido: tira conforto."),radio:_t("Barril radioativo: dói, mas aumenta a chance de mutação."),gelo:_t("Cubo de gelo: você escorrega por 2 segundos."),pimenta:_t("Pimenta: turbo, mas arde."),asteroide:_t("Asteroide: se mexe e dói bastante."),bug:_t("Bug: inverte os controles por um tempo."),feijao:_t("Nuvem de feijão: empurra e dói."),chocolate:_t("Chocolate: gruda e te deixa lento."),raio:_t("Raio: choque que trava os controles."),mix:_t("Os perigos das 7 primeiras regiões."),mix2:_t("Todos os perigos que existem.")};
-for(const R of REGIONS)for(const [k] of R.pool)VARS[k].hint=_t("Região {0}: {1}",R.n,R.name);
-for(const R of REGIONS)VARS[R.boss.drop].hint=_t("Chefe final: {0}",R.boss.name);
+for(const R of REGIONS.filter(R=>R.dim===1))for(const [k] of R.pool)VARS[k].hint=_t("Região {0}: {1}",R.n,R.name);
+for(const R of REGIONS.filter(R=>R.dim===1))VARS[R.boss.drop].hint=_t("Chefe final: {0}",R.boss.name);
+for(const D of DIMENSIONS.slice(1))VARS[D.drop].hint=_t("Último chefe da {0} (mundo {1})",D.name,D.last*5);
