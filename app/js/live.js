@@ -94,7 +94,11 @@ function claimMission(i){
 /* ---------- museum (idle income) ---------- */
 const museumSlots=()=>2+Math.max(...P.owned.bath);
 const museumItems=()=>P.museum.ids.map(id=>P.items.find(i=>i.id===id)).filter(Boolean);
-function museumRate(){return Math.round(museumItems().reduce((s,i)=>s+itemPower(i)*3,0)*rbIncome()*(1+petBonus().income)*evMods().money)}
+/* Each displayed Verity earns 3% of its value per hour, so it pays itself back in about a day and a half. */
+const MUSEUM_PCT=.03;
+const museumMult=()=>rbIncome()*(1+petBonus().income)*evMods().money;
+const museumItemRate=it=>Math.round(itemValue(it)*MUSEUM_PCT*museumMult());
+function museumRate(){return museumItems().reduce((s,i)=>s+museumItemRate(i),0)}
 const MUSEUM_CAP=12;
 function museumPending(){if(!P.museum.last||!P.museum.ids.length)return 0;const h=Math.min(MUSEUM_CAP,(Date.now()-P.museum.last)/36e5);return Math.floor(museumRate()*h)}
 function collectMuseum(){const v=museumPending();P.money+=v;P.museum.last=Date.now();P.stats.museumEarned=(P.stats.museumEarned||0)+v;saveProfile();return v}
@@ -106,6 +110,16 @@ function toggleMuseum(id){
 }
 
 /* ---------- marmitas (gacha) ---------- */
+const marmitaCan=M=>Math.min(500,Math.floor(M.rolos?P.rolos/M.rolos:P.money/M.money));
+/* opens n at once (no roulette); returns the items, best first */
+function openMarmitas(k,n){
+  const M=MARMITAS.find(m=>m.k===k); if(!M)return{err:_t("Marmita desconhecida.")};
+  n=Math.max(1,Math.floor(n)); if(marmitaCan(M)<n)return{err:M.rolos?_t("Faltam {0} {1}.",M.rolos*n-P.rolos,ROLO):_t("Dinheiro insuficiente.")};
+  const out=[];for(let i=0;i<n;i++){const r=openMarmita(k,false,true);if(r.err)break;out.push(r)}
+  out.sort((a,b)=>itemRank(b.item)-itemRank(a.item));
+  const top=out[0]&&out[0].item; if(top&&(VARS[top.v].r>=5||MUT_BY[top.m].i>=6||VARS[top.v].ev))announce(_t("abriu uma marmita e tirou {0}!",fullName(top.v,top.m)));
+  saveProfile(); return{list:out};
+}
 const MARMITAS=[
   {k:'pastel',name:_t("Pastel"),col:'#d89a3a',money:800,w:[60,30,10,0,0,0,0],mut:.05,desc:_t("Comuns e Incomuns. Às vezes uma Rara.")},
   {k:'coxinha',name:_t("Coxinha"),col:'#c8702a',money:4000,w:[25,35,28,10,2,0,0],mut:.1,desc:_t("Até Épica, com chance de Lendária.")},
@@ -117,16 +131,18 @@ function marmitaPool(){
   const reg=WORLDS[clamp(P.world.max,1,WORLDS.length)-1].region,ev=evMods().vars;
   return VAR_ORDER.filter(v=>{const V=VARS[v];if(V.hidden||V.b)return false;if(V.ev)return ev.includes(v);if(V.reg)return V.reg<=reg;return true}).map(v=>({k:v,r:VARS[v].r}));
 }
-function openMarmita(k,free){
+const ALBU_BANQUETE=1/800;
+function openMarmita(k,free,batch){
   const M=MARMITAS.find(m=>m.k===k); if(!M)return{err:_t("Marmita desconhecida.")};
   if(!free){if(M.rolos){if(P.rolos<M.rolos)return{err:_t("Faltam {0} {1}.",M.rolos-P.rolos,ROLO)};P.rolos-=M.rolos}else{if(P.money<M.money)return{err:_t("Dinheiro insuficiente.")};P.money-=M.money}}
   const pool=marmitaPool(),ws=M.w.map((w,r)=>[r,pool.some(p=>p.r===r)?w:0]).filter(x=>x[1]>0);
-  const r=+weighted(ws.map(([r,w])=>[String(r),w])),opts=pool.filter(p=>p.r===r),v=pick(opts).k;
+  const r=+weighted(ws.map(([r,w])=>[String(r),w])),opts=pool.filter(p=>p.r===r);let v=pick(opts).k;
+  if(k==='banquete'&&Math.random()<ALBU_BANQUETE*rbLuck())v='albuquerque';
   const m=Math.random()<M.mut*rbLuck()*evMods().mut?rollMut(900,1):'none';
   const isNew=!P.items.some(i=>i.v===v),item={id:rid(),v,m,f:0,lvl:1,s:0,t:Date.now()};
   P.items.push(item); if(team().length<petSlots())P.pets.push(item.id);
-  track('marmita'); if(VARS[v].r>=5||MUT_BY[m].i>=6||VARS[v].ev)announce(_t("abriu uma marmita e tirou {0}!",fullName(v,m)));
-  saveProfile(); return{item,isNew};
+  track('marmita'); if(!batch&&(VARS[v].r>=5||MUT_BY[m].i>=6||VARS[v].ev))announce(_t("abriu uma marmita e tirou {0}!",fullName(v,m)));
+  if(!batch)saveProfile(); return{item,isNew};
 }
 
 /* ---------- achievements & titles ---------- */
@@ -152,6 +168,7 @@ const ACH=[
   ['upgrade100',_t("Personal Trainer"),_t("Dê 100 upgrades."),()=>P.stats.upgrades||0,100,25],
   ['god',_t("Visto por Deus"),_t("Tenha uma Verity God."),()=>has(i=>i.m==='god')?1:0,1,100],
   ['divino',_t("Divindade"),_t("Tenha uma Verity Divina."),()=>has(i=>VARS[i.v].r===6)?1:0,1,100],
+  ['albu',_t("Lenda Viva"),_t("Tenha o Albuquerque."),()=>has(i=>i.v==='albuquerque')?1:0,1,300],
   ['exu',_t("Laroyê"),_t("Tenha um Exu."),()=>has(i=>i.v==='exu')?1:0,1,30],
   ['col20',_t("Colecionador"),_t("Encontre 20 variantes diferentes."),()=>new Set(P.items.map(i=>i.v)).size,20,30],
   ['col45',_t("Museu Nacional"),_t("Encontre 45 variantes diferentes."),()=>new Set(P.items.map(i=>i.v)).size,45,80],

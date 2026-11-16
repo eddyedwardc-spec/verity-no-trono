@@ -39,6 +39,7 @@ function rollMut(T,luck){
 
 function weighted(ws){let tot=ws.reduce((s,p)=>s+p[1],0),r=Math.random()*tot;for(const [k,w] of ws){if((r-=w)<0)return k}return ws[0][0]}
 function rollWorldVariant(world,c,luck){
+  if(Math.random()<ALBU_RUN*luck)return 'albuquerque';
   const Wd=WORLDS[world-1];
   if(Wd.pool.length&&Math.random()<.35){
     const pool=Wd.pool.filter(p=>c>=p[1]);
@@ -388,9 +389,10 @@ function startFinale(){
     vk=drop?(B.drop||regionDrop(B)):rollWorldVariant(run.world,80,varLuck());
     const cash=Math.round(300*Math.pow(1.13,B.world)*(first?1:.3)*rbCash()*evMods().money); P.money+=cash;
     track('boss');
-    const slotsBefore=petSlots();
+    const slotsBefore=petSlots(),maxBefore=P.world.max;
+    P.world.max=Math.min(WORLDS.length,Math.max(P.world.max,B.world+1));P.stats.maxWorld=Math.max(P.stats.maxWorld||0,P.world.max);
     if(first){P.world.beaten.push(B.world);P.world.max=Math.min(WORLDS.length,Math.max(P.world.max,B.world+1));P.stats.maxBeaten=Math.max(P.stats.maxBeaten||0,P.world.beaten.length);P.stats.maxWorld=Math.max(P.stats.maxWorld||0,P.world.max);if(B.world===WORLDS.length)P.stats.beat60=1;if(B.fase===5)announce(_t("derrotou {0} (mundo {1})!",B.name.replace(_t(" · Forma Final"),''),B.world))}
-    bossInfo={first,drop,cash,name:B.name,world:B.world,unlocked:first&&B.world<WORLDS.length?WORLDS[B.world].name:null,newSlot:petSlots()>slotsBefore};
+    bossInfo={first,drop,cash,name:B.name,world:B.world,unlocked:P.world.max>maxBefore?WORLDS[P.world.max-1].name:null,newSlot:petSlots()>slotsBefore};
   }else{const ev=evMods().vars;vk=ev.length&&Math.random()<.08?pick(ev):rollWorldVariant(run.world,run.p1Comfort,varLuck())}
   const mk=rollMut(T,mutLuck());
   track('runs'); track('combo',q.maxCombo); if(VARS[vk].r>=2)track('rare');

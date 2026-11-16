@@ -63,6 +63,7 @@ const CUT_SPECS={
   reifeijity:{e:'rise',a:'crown',fx:'smoke',line:_t("O rei do feijão chegou!"),p:.6},
   baronity:{e:'grow',a:'stare',fx:'sparkle',line:_t("Encantado. Barão do Cacau, às ordens."),p:.7},
   choquity:{e:'burst',a:'zap',fx:'rain',line:_t("CHOQUE DE REALIDADE!"),p:.8,zc:'#ffe020'},
+  albuquerque:{e:'beam',c:'#ff3dc8',a:'party',fx:'confetti',line:_t("Albuquerque chegou! Pode me chamar de lenda."),p:1.1},
   nadity:{e:'dark',a:'menace',fx:'dark',line:_t("Eu sou o que sobra quando nada sobra."),p:.3},
   festivity:{e:'jump',a:'party',fx:'confetti',line:_t("É festa! O Mundo Vivo chegou!"),p:1.6},
   abobority:{e:'smoke',c:'#ff8a10',a:'laugh',fx:'embers',line:_t("Doces ou travessuras? Travessuras!"),p:.7},

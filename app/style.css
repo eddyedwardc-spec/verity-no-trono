@@ -264,3 +264,26 @@ canvas.prev{width:15em;height:15em}
 .mslot{aspect-ratio:1;border-radius:.7em;background:rgba(0,0,0,.3);display:grid;place-items:center;border:0;color:var(--porcelain);font-weight:900;font-size:.72em;cursor:pointer}
 .odds{display:flex;gap:2px;height:.55em;border-radius:999px;overflow:hidden;width:100%}
 .odds i{display:block;height:100%}
+
+/* 1.4: favorites, bulk buying, selecting many, Verity Upgrader */
+.mgrid2 .mbtn.wide{grid-column:span 2;text-align:center;background:linear-gradient(90deg,rgba(255,61,200,.22),rgba(79,209,139,.22));color:var(--verity)}
+.icard .fav{position:absolute;top:.3em;left:.45em;color:var(--verity);font-size:1em;text-shadow:0 0 .3em rgba(0,0,0,.6)}
+.qty{display:flex;flex-wrap:wrap;gap:.3em;justify-content:center;margin-top:.3em}
+.qty .btn{display:flex;flex-direction:column;align-items:center;line-height:1.05;padding:.3em .55em;min-width:3.6em}
+.qty .btn small{font-size:.66em;font-weight:900;opacity:.85;font-family:var(--body)}
+.qty .btn.max{background:var(--mint);color:var(--ink)}
+.qty .btn.max:disabled{background:var(--card);color:var(--porcelain)}
+.upbox{width:100%;display:flex;flex-direction:column;align-items:center}
+.qlabel{font-size:.78em;font-weight:900;opacity:.85;margin:0}
+.toolbar .bulk{gap:.35em;flex-wrap:wrap}
+.haul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.35em;max-height:22em;overflow-y:auto;margin-top:.4em;text-align:left}
+.hitem{display:flex;align-items:center;gap:.45em;background:var(--card);border-radius:.6em;padding:.25em .45em}
+.hitem span{display:flex;flex-direction:column;min-width:0}
+.hitem b{font-size:.85em;line-height:1.1}
+.hitem small{font-size:.68em;font-weight:900}
+#upSide .row{gap:.35em;flex-wrap:wrap;justify-content:center}
+#upSide select{max-width:100%}
+.upchance{font-family:var(--display);font-size:1.5em;color:var(--mint);margin:0}
+.upres{font-family:var(--display);font-size:1.1em;margin:0}
+.upres.win{color:var(--verity)}
+.upres.lose{color:#ff8a94}

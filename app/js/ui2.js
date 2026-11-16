@@ -85,13 +85,13 @@ function renderMuseu(){
   const b=el('div','lname');b.append(el('small',null,_t("RENDA POR HORA")),el('b',null,money(rate)),el('small',null,_t("acumula até {0}h com o jogo fechado",MUSEUM_CAP)));
   const c=el('button','btn',_t("Coletar"));c.disabled=pend<1;c.onclick=()=>{const v=collectMuseum();sfx.coin();toast(_t("Coletou ")+money(v));renderMuseu()};
   top.append(a,b,c);box.append(top);
-  box.append(el('p','small',_t("As Verities expostas rendem dinheiro sozinhas: 3 × o poder de cada uma por hora{0}. Vagas: {1}/{2} (cada banheiro novo dá mais uma).",P.rebirths?_t(", ×{0} pelos renascimentos",rbIncome().toFixed(1).replace('.',DEC)):'',P.museum.ids.length,museumSlots())));
+  box.append(el('p','small',_t("Cada Verity exposta rende 3% do valor dela por hora{0}, então se paga em mais ou menos um dia e meio. Vagas: {1}/{2} (cada banheiro novo dá mais uma).",P.rebirths?_t(", ×{0} pelos renascimentos",rbIncome().toFixed(1).replace('.',DEC)):'',P.museum.ids.length,museumSlots())));
   const sl=el('div','mslots'),its=museumItems();
   for(let i=0;i<museumSlots();i++){const it=its[i],s2=el('button','mslot');if(it){s2.append(thumbVerity(it.v,it.m,3.6,{f:it.f,badge:false}));s2.title=fullName(it.v,it.m,it.f)+_t(" · tirar");s2.onclick=()=>{toast(toggleMuseum(it.id));renderMuseu()}}else s2.textContent=_t("vazio");sl.append(s2)}
   box.append(sl);
   box.append(el('p','ptitle',_t("Escolha o que expor")));
   const g=el('div','igrid');
-  for(const it of sortItems(P.items,'pow').slice(0,60))g.append(itemCard(it,{em:3.8,sel:P.museum.ids.includes(it.id),extra:_t("rende {0}/h",money(Math.round(itemPower(it)*3*rbIncome()))),onClick:()=>{toast(toggleMuseum(it.id));sfx.click();renderMuseu()}}));
+  for(const it of sortItems(P.items,'val').slice(0,60))g.append(itemCard(it,{em:3.8,sel:P.museum.ids.includes(it.id),extra:_t("rende {0}/h",money(museumItemRate(it))),onClick:()=>{toast(toggleMuseum(it.id));sfx.click();renderMuseu()}}));
   if(!P.items.length)g.append(el('p','empty',_t("Você ainda não tem Verities.")));
   box.append(g);
 }
@@ -100,14 +100,13 @@ function renderMuseu(){
 function renderMarmitas(){
   const main=$('shopMain'),info=$('shopInfo'); main.textContent=''; info.textContent='';
   const ev=evMods(),pool=marmitaPool();
-  main.append(el('p','small',_t("Abra uma marmita e ganhe uma Verity na hora, com roleta. Saem Verities das regiões que você já liberou{0}. Verity nova vem com cutscene.",ev.vars.length?_t(" e as do evento"):'')));
+  main.append(el('p','small',_t("Abra uma marmita e ganhe uma Verity na hora. ×1 tem roleta; ×10, ×50, ×100 e Máx abrem tudo de uma vez. Saem Verities das regiões que você já liberou{0}.",ev.vars.length?_t(" e as do evento"):'')));
   const g=el('div','igrid wide');
   for(const M of MARMITAS){
     const c=el('div','icard'),price=M.rolos?`${M.rolos} ${ROLO}`:money(M.money),can=M.rolos?P.rolos>=M.rolos:P.money>=M.money;
     const n=el('span','nm',M.name);n.style.color=M.col;
     const od=el('div','odds');const tot=M.w.reduce((s,x)=>s+x,0);M.w.forEach((w,r)=>{if(!w)return;const i=el('i');i.style.width=(w/tot*100)+'%';i.style.background=RAR[r].col;i.title=`${RAR[r].name}: ${Math.round(w/tot*100)}%`;od.append(i)});
-    const b=el('button','btn sm',_t("Abrir"));b.disabled=!can;b.onclick=()=>playMarmita(M.k);
-    c.append(n,el('span','sub',M.desc),od,el('span','val',price),b);g.append(c);
+    c.append(n,el('span','sub',M.desc),od,el('span','val',price),qtyRow({cost:n=>n,max:()=>marmitaCan(M),fmt:priceOf(M),buy:n=>buyMarmitas(M.k,n)}));g.append(c);
   }
   main.append(g);
   shopPrev={kind:'verity'};

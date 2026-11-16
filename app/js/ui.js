@@ -4,7 +4,9 @@
 /* ---------- toast & modal ---------- */
 let toastTimer=null;
 function toast(m,ms=2800){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,ms)}
+let MODAL_SEQ=0;
 function modal(title,body,actions){
+  MODAL_SEQ++;
   $('modalTitle').textContent=title; const b=$('modalBody'); b.textContent='';
   (Array.isArray(body)?body:[body]).forEach(n=>n&&b.append(typeof n==='string'?el('p','small',n):n));
   const a=$('modalActions'); a.textContent='';
@@ -94,6 +96,7 @@ function itemCard(it,o={}){
   const sub=el('span','sub',_t("{0} {1} · Nv {2}",R.name,stars(V.r),it.lvl)); sub.style.color=R.col;
   b.append(nm,sub,el('span','sub pow',_t("Poder ")+fmt(itemPower(it))),el('span','val',money(o.price??itemValue(it))));
   if(o.extra)b.append(el('span','sub',o.extra));
+  if(it.fav)b.append(el('span','fav','★'));
   if(o.tag)b.append(el('span','tag',o.tag));
   if(o.onClick)b.onclick=o.onClick;
   return b;
@@ -244,10 +247,10 @@ function renderColl(){
   const g=$('collGrid'); g.textContent='';
   const items=sortItems(P.items,$('collSort').value),f=featured();
   $('collCount').textContent=_t("{0} Verities · valor total {1}",P.items.length,money(totalValue()));
-  renderTeamBar();
+  renderTeamBar(); renderCollBulk();
   if(!items.length)g.append(el('p','empty',_t("Nenhuma Verity ainda. Jogue uma partida pra começar a coleção.")));
   if(!items.some(i=>i.id===collSel))collSel=items[0]?items[0].id:null;
-  for(const it of items)g.append(itemCard(it,{sel:it.id===collSel,tag:P.pets.includes(it.id)?_t("EQUIPE"):P.museum.ids.includes(it.id)?_t("MUSEU"):f&&f.id===it.id?_t("VITRINE"):null,onClick:()=>{collSel=it.id;sfx.click();renderColl()}}));
+  for(const it of items)g.append(itemCard(it,{sel:collPick?collPick.has(it.id):it.id===collSel,tag:P.pets.includes(it.id)?_t("EQUIPE"):P.museum.ids.includes(it.id)?_t("MUSEU"):f&&f.id===it.id?_t("VITRINE"):null,onClick:()=>{if(collPick){if(collPick.has(it.id))collPick.delete(it.id);else collPick.add(it.id)}collSel=it.id;sfx.click();renderColl()}}));
   renderCollDetail(P.items.find(i=>i.id===collSel));
 }
 function renderCollDetail(it){
@@ -262,13 +265,15 @@ function renderCollDetail(it){
   const lv=el('div','lvl'); lv.append(el('span',null,_t("Nível {0}/{1} · +8% de valor por nível",it.lvl,MAX_LVL))); const xb=el('div','xpbar'),xi=el('i'); xi.style.width=(it.lvl/MAX_LVL*100)+'%'; xb.append(xi); lv.append(xb);
   const pw=el('p','vname',_t("Poder ")+fmt(itemPower(it))); pw.style.color='var(--mint)';
   const ab=VARS[it.v].abil; box.append(nm,chips,pw,el('p','small',ab?_t("Como pet · ")+abilText([ab[0],ab[1]*(1+(it.f||0)*.5)]):_t("Sem habilidade de pet.")),el('p','vname',money(itemValue(it))),lv);
+  box.append(favButton(it));
   const acts=el('div','actions');
-  const up=el('button','btn sm',it.lvl>=MAX_LVL?_t("Nível máximo"):_t("Upgrade pro Nv {0} · {1}",it.lvl+1,money(upCost(it)))); up.disabled=it.lvl>=MAX_LVL||P.money<upCost(it);
-  up.onclick=()=>act(()=>upgradeItem(it.id),_t("Nível {0}!",it.lvl+1),'up');
+  const upBox=el('div','upbox');upBox.append(el('p','qlabel',it.lvl>=MAX_LVL?_t("Nível máximo"):_t("Upgrade de nível (cada um custa mais)")));
+  if(it.lvl<MAX_LVL)upBox.append(qtyRow({prefix:'+',cap:MAX_LVL-it.lvl,cost:n=>upCostN(it,n),max:()=>upMax(it),fmt:money,buy:n=>{const to=Math.min(MAX_LVL,it.lvl+n);act(()=>upgradeItem(it.id,n),_t("Nível {0}!",to),'up')}}));
+  box.append(upBox);
   const sell=el('button','btn ghost sm',_t("Vender pro jogo · {0}",money(sellPrice(it))));
-  sell.onclick=()=>confirmDo(_t("Vender pro jogo?"),_t("{0} Nv {1} por {2} (70% do valor).",fullName(it.v,it.m,it.f),it.lvl,money(sellPrice(it))),_t("Vender"),()=>act(()=>sellItem(it.id),_t("Vendida!"),'coin'));
+  sell.onclick=()=>guardFav([it],()=>confirmDo(_t("Vender pro jogo?"),_t("{0} Nv {1} por {2} (70% do valor).",fullName(it.v,it.m,it.f),it.lvl,money(sellPrice(it))),_t("Vender"),()=>act(()=>sellItem(it.id),_t("Vendida!"),'coin')));
   const mk=el('button','btn ghost sm',_t("Anunciar no mercado")); mk.disabled=!online(); if(!online())mk.title=netText();
-  mk.onclick=()=>promptListing(it);
+  mk.onclick=()=>guardFav([it],()=>promptListing(it));
   const isF=featured()&&featured().id===it.id;
   const vt=el('button','btn ghost sm',isF?_t("Está na vitrine"):_t("Pôr na vitrine")); vt.disabled=isF; vt.onclick=()=>{setFeatured(it.id);toast(_t("Na vitrine!"));sfx.click()};
   const inTeam=P.pets.includes(it.id),pt=el('button','btn sm',inTeam?_t("Tirar da equipe"):_t("Pôr na equipe"));
@@ -276,12 +281,12 @@ function renderCollDetail(it){
   const grp=fuseGroup(it).length,fu=el('button','btn ghost sm',(it.f||0)>=2?_t("Fusão máxima"):_t("Fundir 5 iguais ({0}/5) · {1}",grp,money(fuseCost(it))));
   fu.disabled=(it.f||0)>=2||grp<5||P.money<fuseCost(it);
   fu.title=_t("5 Verities iguais (mesma variante, mutação e fusão) viram 1 ")+((it.f||0)?_t("Arco-íris"):_t("Dourada"))+_t(", bem mais forte.");
-  fu.onclick=()=>confirmDo(_t("Fundir?"),_t("5 × {0} viram 1 {1}. Custa {2}. O nível fica o maior entre elas.",fullName(it.v,it.m,it.f),fullName(it.v,it.m,(it.f||0)+1),money(fuseCost(it))),_t("Fundir"),()=>{if(act(()=>fuseItem(it.id),_t("Fusão feita!"),'up')){collSel=LAST_FUSED;renderColl()}});
+  fu.onclick=()=>guardFav(fuseUsed(it),()=>confirmDo(_t("Fundir?"),_t("5 × {0} viram 1 {1}. Custa {2}. O nível fica o maior entre elas.",fullName(it.v,it.m,it.f),fullName(it.v,it.m,(it.f||0)+1),money(fuseCost(it))),_t("Fundir"),()=>{if(act(()=>fuseItem(it.id),_t("Fusão feita!"),'up')){collSel=LAST_FUSED;renderColl()}}));
   const inMu=P.museum.ids.includes(it.id),mu=el('button','btn ghost sm',inMu?_t("Tirar do Museu"):_t("Expor no Museu"));
   mu.onclick=()=>{toast(toggleMuseum(it.id));sfx.click()};
   const cs=el('button','btn ghost sm',_t("Ver cutscene"));
   cs.onclick=()=>{closeAllPanels();startCutscene(it.v,it.m,it.f,()=>{goMenu();openPanel('coll');collSel=it.id;renderColl()},true)};
-  acts.append(pt,up,fu,mu,cs,sell,mk,vt); box.append(acts);
+  acts.append(pt,fu,mu,cs,sell,mk,vt); box.append(acts);
   if(!online())box.append(el('p','small',_t("Mercado e trocas: ")+netText()));
   d.append(box);
 }
@@ -338,9 +343,9 @@ function cutPick(vk){
   const own=P.items.filter(i=>i.v===vk).sort((a,b)=>(b.f||0)-(a.f||0)||MUT_BY[b.m].i-MUT_BY[a.m].i)[0];
   return own?{v:vk,m:own.m,f:own.f||0}:{v:vk,m:'none',f:0};
 }
-function playCuts(list,i){
-  if(i>=list.length){goMenu();openPanel('coll','cuts');return}
-  const c=list[i]; closeAllPanels(); startCutscene(c.v,c.m,c.f,()=>playCuts(list,i+1),true);
+function playCuts(list,i,replay=true,done){
+  if(i>=list.length){if(done)done();else{goMenu();openPanel('coll','cuts')}return}
+  const c=list[i]; closeAllPanels(); startCutscene(c.v,c.m,c.f,()=>playCuts(list,i+1,replay,done),replay);
 }
 function renderCuts(){
   const box=$('collCuts'); box.textContent='';
@@ -378,10 +383,11 @@ function renderShop(){
     return c;
   };
   if(tab==='boosts'){
-    main.append(el('p','small',_t("Cada compra dá 1 carga. As cargas são gastas sozinhas na próxima partida que você começar.")));
+    main.append(el('p','small',_t("Cada compra dá 1 carga. As cargas são gastas sozinhas, uma por partida. Compre ×10, ×50, ×100 ou o máximo de uma vez.")));
     for(const [k,b] of Object.entries(BOOSTS)){
       const have=P.boosts[k]||0;
-      g.append(card(null,b.name,b.desc+(have?_t(" · você tem {0}",have):''),money(b.price),_t("Comprar"),P.money<b.price,()=>act(()=>buyBoost(k),b.name+_t(" comprado!"))));
+      const c=el('div','icard');c.append(el('span','nm',b.name),el('span','sub',b.desc+(have?_t(" · você tem {0}",have):'')),el('span','val',money(b.price)));
+      c.append(qtyRow({cost:n=>b.price*n,max:()=>Math.min(9999,Math.floor(P.money/b.price)),fmt:money,buy:n=>act(()=>buyBoost(k,n),_t("{0} ×{1} comprado!",b.name,n))}));g.append(c);
     }
     shopPrev={kind:'verity'};
     info.append(el('p','ptitle',_t("Seus boosts")));
@@ -558,7 +564,7 @@ function renderProfile(){
 }
 $('pfTrade').onclick=()=>{
   if(!pf||!pfSel.size)return;
-  const want=pf.items.filter(i=>pfSel.has(i.id)),give=new Set();
+  const want=pf.items.filter(i=>pfSel.has(i.id)),give=new Set();let favAck=false;
   const grid=el('div','igrid'),cash=el('input','input sm'); cash.type='number'; cash.min='0'; cash.value='0'; cash.setAttribute('aria-label',_t("Dinheiro oferecido"));
   const sum=el('p','small');
   const upd=()=>{const gv=P.items.filter(i=>give.has(i.id));sum.textContent=_t("Você pede {0} (valor {1}) e oferece {2} (valor {3}) + {4}.",want.length,money(totalValue(want)),gv.length,money(totalValue(gv)),money(+cash.value||0))};
@@ -566,7 +572,7 @@ $('pfTrade').onclick=()=>{
   cash.oninput=upd; draw(); upd();
   const lab=el('label','row left'); lab.append(el('span','small',_t("Dinheiro junto:")),cash);
   modal(_t("Troca com {0}",pf.username),[el('p','small',_t("Escolha o que você oferece. Suas Verities ficam guardadas na proposta até a outra pessoa responder.")),grid,lab,sum],
-    [{label:_t("Enviar proposta"),fn:async()=>{await proposeTrade(pf.uid,pf.username,[...give],want,cash.value);toast(_t("Proposta enviada!"));sfx.ok();pfSel.clear();renderProfile()}},{label:_t("Cancelar"),cls:'ghost'}]);
+    [{label:_t("Enviar proposta"),fn:async()=>{const fv=favs(P.items.filter(i=>give.has(i.id)));if(fv.length&&!favAck){favAck=true;toast(_t("Tem favorita na troca ({0}). Clique de novo pra confirmar.",fv.map(i=>fullName(i.v,i.m,i.f)).join(', ')),4000);sfx.err();return false}await proposeTrade(pf.uid,pf.username,[...give],want,cash.value);toast(_t("Proposta enviada!"));sfx.ok();pfSel.clear();renderProfile()}},{label:_t("Cancelar"),cls:'ghost'}]);
 };
 
 /* ---------- ranking ---------- */

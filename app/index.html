@@ -42,6 +42,7 @@
         <button class="mbtn" id="mFriends">Amigos <span class="badge" id="friendBadge" hidden></span></button>
         <button class="mbtn" id="mRank">Ranking</button>
         <button class="mbtn" id="mCfg">Configurações</button>
+        <button class="mbtn wide" id="mUpgr">Verity Upgrader</button>
       </div>
       <div class="row left">
         <button class="btn ghost sm" id="mFull">Tela cheia</button>
@@ -162,13 +163,21 @@
     <div class="pbody split" data-pane="mine">
       <div class="pmain">
         <div class="team" id="teamBar"></div>
-        <div class="toolbar"><label>Ordenar <select id="collSort"><option value="pow">Poder</option><option value="val">Valor</option><option value="rar">Raridade</option><option value="lvl">Nível</option><option value="new">Mais recentes</option></select></label><span id="collCount"></span></div>
+        <div class="toolbar"><label>Ordenar <select id="collSort"><option value="pow">Poder</option><option value="val">Valor</option><option value="rar">Raridade</option><option value="lvl">Nível</option><option value="new">Mais recentes</option></select></label><span id="collCount"></span><div class="row left bulk" id="collBulk"></div></div>
         <div class="igrid" id="collGrid"></div>
       </div>
       <aside class="pside" id="collDetail"></aside>
     </div>
     <div class="pbody" data-pane="index" id="collIndex" hidden></div>
     <div class="pbody" data-pane="cuts" id="collCuts" hidden></div>
+  </section>
+
+  <section id="upgr" class="panel" hidden aria-label="Verity Upgrader">
+    <header class="phead"><button class="btn ghost sm" data-close>Voltar</button><h3>Verity Upgrader</h3><span class="wallet"></span></header>
+    <div class="pbody split">
+      <div class="pmain"><p class="ptitle" id="upTitle"></p><p class="small" id="upHelp"></p><div class="igrid" id="upGrid"></div></div>
+      <aside class="pside" id="upSide"></aside>
+    </div>
   </section>
 
   <section id="shop" class="panel" hidden aria-label="Loja">
@@ -265,6 +274,7 @@
 <script src="js/cutscene.js"></script>
 <script src="js/game.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/extra.js"></script>
 <script src="js/ui2.js"></script>
 </body>
 </html>

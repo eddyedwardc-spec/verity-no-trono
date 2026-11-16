@@ -80,6 +80,13 @@ const NEW_VARS={
 };
 for(const [k,v] of Object.entries(NEW_VARS)){VARS[k]={...v,gen:true,glow:v.glow||v.col[1].replace(/^#(..)(..)(..)$/,(m,a,b,c)=>`${parseInt(a,16)},${parseInt(b,16)},${parseInt(c,16)}`)};VAR_ORDER.push(k)}
 
+/* Albuquerque: the rarest Verity of all, with a rarity of its own. 1 in 20,000 runs (any world), 1 in 800 Banquetes, or the Upgrader. */
+RAR.push({k:'unico',name:_t("Único"),col:'#ff3dc8'});
+POW_BY_RAR.push(600);
+const ALBU_RUN=1/20000;
+VARS.albuquerque={name:'Albuquerque',r:7,base:250000,gen:true,col:['#ffe6d2','#f0b48c','#b87048'],ink:'#3a2014',glow:'255,61,200',eyes:'albu',mouth:'albu',acc:['albuback','albuhair','hoodie'],abil:['all',.35],hint:_t("1 em 20.000 partidas, em qualquer mundo")};
+VAR_ORDER.push('albuquerque');
+
 /* The 12 regions. Each has 5 worlds; the last one is the region boss in its final form. */
 const REGIONS=[
   {name:_t("Intestino"),sub:_t("Onde tudo começa."),special:null,pal:{bg:'#3d0d1b',tube:'#c24d68',wall:'#7a1d36',blob:'rgba(110,25,50,.35)',light:'rgba(255,175,190,.16)',fold:'rgba(95,15,42,.45)'},pool:[],
