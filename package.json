@@ -57,6 +57,12 @@
       "artifactName": "Verity-no-Trono-Setup-${version}.${ext}",
       "deleteAppDataOnUninstall": false
     },
-    "publish": []
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "eddyedwardc-spec",
+        "repo": "verity-no-trono"
+      }
+    ]
   }
 }
