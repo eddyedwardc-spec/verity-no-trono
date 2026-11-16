@@ -287,3 +287,21 @@ canvas.prev{width:15em;height:15em}
 .upres{font-family:var(--display);font-size:1.1em;margin:0}
 .upres.win{color:var(--verity)}
 .upres.lose{color:#ff8a94}
+
+/* 1.5: chat between friends */
+.chatbody{display:flex;flex-direction:column;gap:.5em;overflow:hidden}
+.chatlog{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:.4em;padding:.3em .2em}
+.bubble{align-self:flex-start;max-width:70%;background:var(--card);border-radius:.9em .9em .9em .25em;padding:.45em .75em .35em;text-align:left;display:flex;flex-direction:column;gap:.2em}
+.bubble.me{align-self:flex-end;background:rgba(255,210,31,.16);border-radius:.9em .9em .25em .9em}
+.bubble p{margin:0;font-weight:800;overflow-wrap:anywhere;white-space:pre-wrap}
+.bubble time{align-self:flex-end;font-size:.62em;font-weight:900;opacity:.55}
+.bverity{display:flex;align-items:center;gap:.5em}
+.bverity span{display:flex;flex-direction:column}
+.bverity b{font-family:var(--display);font-weight:400}
+.bverity small{font-size:.72em;font-weight:900;opacity:.8}
+.chatbar{display:flex;gap:.4em;align-items:center}
+.chatbar .input{flex:1;min-width:0}
+.chatquick{gap:.3em}
+.chatquick .btn{font-size:1em;padding:.15em .45em}
+.lname .lastmsg{opacity:.6;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.igrid.share{max-height:24em;overflow-y:auto}

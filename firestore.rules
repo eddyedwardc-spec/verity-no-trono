@@ -34,6 +34,18 @@ service cloud.firestore {
       allow update: if signedIn() && (resource.data.from == me() || resource.data.to == me());
     }
 
+    // Chat entre amigos. O id da conversa é "uidA_uidB": só esses dois leem e escrevem.
+    match /chats/{pair} {
+      allow read, create, update: if signedIn() && me() in pair.split('_');
+      allow delete: if signedIn() && me() in pair.split('_');
+      match /msgs/{id} {
+        allow read: if signedIn() && me() in pair.split('_');
+        allow create: if signedIn() && me() in pair.split('_') && request.resource.data.from == me()
+          && request.resource.data.text is string && request.resource.data.text.size() <= 300;
+        allow delete: if signedIn() && resource.data.from == me();
+      }
+    }
+
     // Códigos secretos e avisos que o dono do jogo cria pelo console do Firebase (meta/codes). Só leitura.
     match /meta/{doc} {
       allow read: if signedIn();

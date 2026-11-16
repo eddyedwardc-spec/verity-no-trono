@@ -40,8 +40,9 @@ function openPanel(id,tab){
   $(id).hidden=false; if(tab)TAB[id]=tab; syncTabs(id); RENDER[id]&&RENDER[id](true);
   const c=$(id).querySelector('[data-close]'); if(c)c.focus({preventScroll:true});
 }
+const PANEL_CLOSE={}; // per-panel cleanup when it closes
 function closePanel(id){
-  const i=panelStack.indexOf(id); if(i>=0)panelStack.splice(i,1); $(id).hidden=true;
+  const i=panelStack.indexOf(id); if(i>=0)panelStack.splice(i,1); $(id).hidden=true; if(PANEL_CLOSE[id])PANEL_CLOSE[id]();
   if(id==='cfg'&&S.paused)$('pResume').focus();
   if(S.mode==='menu'&&!anyPanelOpen())renderMenu();
 }
@@ -66,6 +67,7 @@ function onProfileChange(){
 function onNetChange(){
   updateBadges(); if(!$('menu').hidden)renderMenu(); $('setupNet').textContent=netText();
   for(const id of panelStack)if(['friends','market','rank','cfg'].includes(id)&&RENDER[id])RENDER[id](false);
+  if(CHAT.open&&!online()){closePanel('chat')}
   if(online()&&!P.username&&(S.mode==='menu'||S.mode==='boot')){$('setupErr').textContent=NET.msg||'';showOnly('setup')}
 }
 function netText(){
@@ -80,8 +82,9 @@ function netText(){
   }
 }
 function updateBadges(){
-  const n=NET.reqIn.length,t=NET.tradesIn.filter(x=>x.status==='open').length;
-  const fb=$('friendBadge'); fb.hidden=!(n+t); fb.textContent=n+t;
+  chatSync();
+  const n=NET.reqIn.length,t=NET.tradesIn.filter(x=>x.status==='open').length,c=online()?chatUnreadCount():0;
+  const fb=$('friendBadge'); fb.hidden=!(n+t+c); fb.textContent=n+t+c;
   const tb=$('tradeBadge'); tb.hidden=!t; tb.textContent=t;
 }
 
@@ -505,9 +508,11 @@ function renderFriends(){
       const row=el('div','lrow'); row.append(thumbAvatar(f.eq,3.2));
       const top=f.items.reduce((b,i)=>!b||itemValue(i)>itemValue(b)?i:b,null);
       const nm=el('span','lname'); nm.append(el('b',null,f.username),el('small',null,_t("Nível {0} · {1} Verities · recorde {2}{3}",f.level,f.items.length,fmt(f.best),top?_t(" · melhor: {0}",fullName(top.v,top.m,top.f)):''))); row.append(nm);
-      const bt=el('div','row'); const v=el('button','btn sm',_t("Ver coleção e trocar")),x=el('button','btn ghost sm',_t("Remover"));
+      const bt=el('div','row'); const ch=el('button','btn sm',_t("💬 Chat")),v=el('button','btn ghost sm',_t("Ver coleção e trocar")),x=el('button','btn ghost sm',_t("Remover"));
+      if(chatUnread(f.uid)){const bd=el('span','badge','!');ch.append(' ',bd)} ch.onclick=()=>openChat(f.uid);
+      const d=CHAT.docs[f.uid]; if(d&&d.last)nm.append(el('small','lastmsg',(d.last.from===NET.uid?_t("Você: "):'')+lastText(d.last).slice(0,50)));
       v.onclick=()=>openProfile(f.uid); x.onclick=()=>confirmDo(_t("Remover amigo?"),_t("{0} sai da sua lista.",f.username),_t("Remover"),()=>{removeFriend(f.uid);friendsCache=(friendsCache||[]).filter(y=>y.uid!==f.uid);renderFriends()});
-      bt.append(v,x); row.append(bt); fl.append(row);
+      bt.append(ch,v,x); row.append(bt); fl.append(row);
     }
   }
   renderTrades();

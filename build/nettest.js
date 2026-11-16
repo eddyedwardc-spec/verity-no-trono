@@ -43,6 +43,12 @@ app.whenReady().then(async () => {
     ok('friend accept', await js(B, `await waitFor(()=>NET.reqIn.length);await acceptFriend(NET.reqIn[0]);return P.friends`));
     ok('friend both sides', await js(A, `await waitFor(()=>P.friends.includes('${uidB}'));return P.friends`));
 
+    ok('chat send', await js(A, `chatSync();await chatSend('${uidB}',{text:'oi ${tag}'});return 'sent'`));
+    ok('chat unread for B', await js(B, `chatSync();await waitFor(()=>chatUnread('${uidA}'));return {unread:chatUnreadCount(),last:CHAT.docs['${uidA}'].last.text}`));
+    ok('chat open + read', await js(B, `openChat('${uidA}');await waitFor(()=>CHAT.msgs.length);await waitFor(()=>!chatUnread('${uidA}'));return {msgs:CHAT.msgs.map(m=>m.text),unread:chatUnreadCount()}`));
+    ok('chat share verity', await js(B, `await new Promise(r=>setTimeout(r,700));await chatSend('${uidA}',{verity:P.items[0],text:'olha'});closePanel('chat');return 'sent'`));
+    ok('chat A sees verity', await js(A, `await waitFor(()=>{const d=CHAT.docs['${uidB}'];return d&&d.last&&d.last.verity});return lastText(CHAT.docs['${uidB}'].last)+' / unread '+chatUnreadCount()`));
+    ok('chat stranger blocked', await js(A, `try{await NET.fs.collection('chats').doc('aaaa_zzzz').get();return 'NOT blocked'}catch(e){return e.code||e.message}`));
     ok('see friend collection', await js(A, `const f=await fetchPlayer('${uidB}');window.fB=f;return f.username+' has '+f.items.map(i=>i.id).join(',')`));
     ok('propose trade', await js(A, `await proposeTrade('${uidB}','${NAME_B}',['ta2'],[fB.items.find(i=>i.id==='tb2')],100);return {items:P.items.map(i=>i.id),money:P.money}`));
     ok('accept trade', await js(B, `await waitFor(()=>NET.tradesIn.some(t=>t.status==='open'));await acceptTrade(NET.tradesIn.find(t=>t.status==='open'));return {items:P.items.map(i=>i.id),money:P.money}`));
@@ -65,6 +71,7 @@ app.whenReady().then(async () => {
   for (const [w, n] of [[A, NAME_A], [B, NAME_B]]) {
     try {
       console.log('CLEANUP', n, await js(w, `if(!NET.fs)return 'no net';const u=NET.uid;
+        for(const f of P.friends){const r=NET.fs.collection('chats').doc(chatId(f));const ms=await r.collection('msgs').where('from','==',u).get().catch(()=>({docs:[]}));for(const d of ms.docs)await d.ref.delete().catch(()=>{});await r.delete().catch(()=>{})}
         await NET.fs.collection('usernames').doc('${n}').delete().catch(()=>{});
         await NET.fs.collection('inv').doc(u).delete().catch(()=>{});
         await NET.fs.collection('players').doc(u).delete().catch(()=>{});
