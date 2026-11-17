@@ -138,17 +138,17 @@ function petCosmo(t){
 
 /* ---------- the secrets themselves ---------- */
 const SECRETS=[
-  {k:'wyrmity',name:_t("Wyrmity"),base:300000,worlds:[6,10],col:['#b8ffd8','#2fcf7a','#0d6b3c'],glow:'60,255,150',abil:['dmg',1.0],draw:petWyrm,
+  {k:'wyrmity',name:_t("Wyrmity"),base:300000,worlds:[41,45],col:['#b8ffd8','#2fcf7a','#0d6b3c'],glow:'60,255,150',abil:['dmg',1.0],draw:petWyrm,
     cut:{e:'burst',a:'roar',fx:'embers',line:_t("ROOOAR! O céu agora é meu!"),p:.5}},
-  {k:'golemity',name:_t("Golemity"),base:320000,worlds:[16,20],col:['#d0dcf2','#8496c0','#46567e'],glow:'122,240,255',abil:['comfort',.5],draw:petGolem,
+  {k:'golemity',name:_t("Golemity"),base:320000,worlds:[56,60],col:['#d0dcf2','#8496c0','#46567e'],glow:'122,240,255',abil:['comfort',.5],draw:petGolem,
     cut:{e:'grow',a:'menace',fx:'snow',line:_t("Eu sou feito de gelo eterno."),p:.3}},
-  {k:'fenixity',name:_t("Fenixity"),base:350000,worlds:[21,25],col:['#fff6c0','#ff9a2a','#c2280a'],glow:'255,140,40',abil:['regen',10],draw:petFenix,
+  {k:'fenixity',name:_t("Fenixity"),base:380000,worlds:[126,130],col:['#fff6c0','#ff9a2a','#c2280a'],glow:'255,140,40',abil:['regen',10],draw:petFenix,
     cut:{e:'lava',a:'float',fx:'embers',line:_t("Eu renasço das cinzas... e da privada!"),p:1.3}},
-  {k:'krakity',name:_t("Krakity"),base:380000,worlds:[26,30],col:['#ffe0ff','#c34dff','#4a128a'],glow:'200,90,255',abil:['door',2],draw:petKrak,
+  {k:'krakity',name:_t("Krakity"),base:350000,worlds:[86,90],col:['#ffe0ff','#c34dff','#4a128a'],glow:'200,90,255',abil:['door',2],draw:petKrak,
     cut:{e:'swim',a:'float',fx:'bubbles',line:_t("Blub blub... vim do fundo do espaço."),p:1.4}},
-  {k:'mechity',name:_t("Mechity"),base:420000,worlds:[31,35],col:['#f0f4f8','#9aa8b8','#4a5664'],glow:'120,210,255',abil:['zone',.4],draw:petMech,
+  {k:'mechity',name:_t("Mechity"),base:420000,worlds:[181,185],col:['#f0f4f8','#9aa8b8','#4a5664'],glow:'120,210,255',abil:['zone',.4],draw:petMech,
     cut:{e:'beam',a:'laser',fx:'stars',line:_t("Piloto Verity, sistemas no máximo!"),p:1.1}},
-  {k:'hidrity',name:_t("Hidrity"),base:480000,worlds:[41,45],col:['#e8d0ff','#8a4ad8','#3a1478'],glow:'170,100,255',abil:['all',.4],draw:petHydra,
+  {k:'hidrity',name:_t("Hidrity"),base:480000,worlds:[211,215],col:['#e8d0ff','#8a4ad8','#3a1478'],glow:'170,100,255',abil:['all',.4],draw:petHydra,
     cut:{e:'rise',a:'roar',fx:'slime',line:_t("Três cabeças pensam melhor que uma!"),p:.6}},
   {k:'cosmity',name:_t("Cosmity"),base:900000,worlds:[256,260],col:['#ff8ad8','#7a3aff','#1a2a9a'],glow:'160,120,255',abil:['all',.5],draw:petCosmo,
     cut:{e:'portal',a:'orbit',fx:'stars',line:_t("Eu nado entre as galáxias."),p:.7}}
