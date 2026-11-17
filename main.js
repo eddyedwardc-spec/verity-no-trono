@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 const SMOKE = process.env.VERITY_SMOKE === '1';   // hidden self-test, used while building
+const ARENA = process.env.VERITY_ARENA === '1';   // test build of the Arena (PvP), opened by arena-teste.cmd
 const ICON_OUT = process.env.VERITY_ICON_OUT;     // when set, renders the icon PNGs and exits
 
 app.setName('Cague um Verity');
@@ -45,7 +46,7 @@ function createWindow() {
   win.webContents.on('will-navigate', (e, url) => { if (!url.startsWith('file:')) e.preventDefault(); });
 
   if (SMOKE || ICON_OUT) win.webContents.setAudioMuted(true);
-  win.loadFile(path.join(__dirname, 'app', 'index.html'), (SMOKE || ICON_OUT) ? { query: { smoke: '1' } } : undefined);
+  win.loadFile(path.join(__dirname, 'app', 'index.html'), (SMOKE || ICON_OUT) ? { query: { smoke: '1' } } : ARENA ? { query: { arena: '1' } } : undefined);
   if (!SMOKE && !ICON_OUT) win.once('ready-to-show', () => win.show());
   return win;
 }

@@ -10,9 +10,9 @@ function newRun(world,boss){
     boss:boss?{...B,max:B.hp,t:0,dmgAcc:0,dmgT:0,jumpT:5,off:0,invT:8,inv:0,hurtT:0}:null};
 }
 function consumeBoosts(){run.boosts={};let any=false;for(const k of Object.keys(BOOSTS))if((P.boosts[k]||0)>0){P.boosts[k]--;run.boosts[k]=true;any=true}if(any)saveProfile()}
-const mutLuck=()=>(run.boosts.mut2?2:1)*(run.boosts.mut15?1.5:1)*run.bath.luck*(1+run.pet.mutluck)*(1+run.radio)*rbLuck()*evMods().mut;
+const mutLuck=()=>kingLuck()*(run.boosts.mut2?2:1)*(run.boosts.mut15?1.5:1)*run.bath.luck*(1+run.pet.mutluck)*(1+run.radio)*rbLuck()*evMods().mut;
 const bm=k=>!!(run&&run.boss&&run.boss.mods.includes(k));
-const varLuck=()=>(run.boosts.var2?2:1)*(run.boosts.var15?1.5:1)*run.bath.luck*(1+run.pet.varluck)*rbLuck();
+const varLuck=()=>kingLuck()*(run.boosts.var2?2:1)*(run.boosts.var15?1.5:1)*run.bath.luck*(1+run.pet.varluck)*rbLuck();
 
 const BANDS=[
   {min:95,pool:[['exu',8],['lord',32],['moggity',60]]},
@@ -42,6 +42,7 @@ const BOSS_MUT=[ // none, bronze, ouro, diamante, platina, galaxy, hacker, pline
   [0,5,15,25,22,17,10,4,2]];
 const BOSS_MUT_TXT=[_t("mutação fraca"),_t("mutação razoável"),_t("mutação média"),_t("mutação boa"),_t("mutação ótima")];
 function rollBossMut(fase,luck){const w=BOSS_MUT[clamp(fase,1,5)-1].map((x,i)=>[String(i),x*(i>=3?luck:1)]).filter(p=>p[1]>0);return MUTS[+weighted(w)].k}
+const HUGE_CHANCE=1/1500;
 function rollMut(T,luck){
   const m=clamp(T/700,.2,2.5)*luck;
   for(let i=MUTS.length-1;i>=1;i--){const u=MUTS[i];if(T>=u.min&&Math.random()<u.p*m)return u.k}
@@ -405,12 +406,17 @@ function startFinale(){
     if(first){P.world.beaten.push(B.world);P.world.max=Math.min(WORLDS.length,Math.max(P.world.max,B.world+1));P.stats.maxBeaten=Math.max(P.stats.maxBeaten||0,P.world.beaten.length);P.stats.maxWorld=Math.max(P.stats.maxWorld||0,P.world.max);if(B.world===60)P.stats.beat60=1;if(B.world===WORLDS.length)P.stats.beat260=1;if(B.fase===5)announce(_t("derrotou {0} (mundo {1})!",B.name.replace(_t(" · Forma Final"),''),B.world))}
     bossInfo={first,drop,cash,name:B.name,world:B.world,unlocked:P.world.max>maxBefore?WORLDS[P.world.max-1].name:null,newSlot:petSlots()>slotsBefore};
   }else{const ev=evMods().vars;vk=ev.length&&Math.random()<.08?pick(ev):rollWorldVariant(run.world,run.p1Comfort,varLuck())}
+  let secret=false;
+  for(const s of secretsAt(run.world))if(Math.random()<SECRET_CHANCE*Math.sqrt(varLuck())){vk=s.k;secret=true;announce(_t("ACHOU A SECRETA {0}!!!",VARS[vk].name));P.stats.secrets=(P.stats.secrets||0)+1;break}
   let mk=bossInfo&&bossInfo.drop?rollBossMut(B.fase,mutLuck()):rollMut(T,mutLuck());
   if(bossInfo&&bossInfo.drop&&run.W.mutMin&&MUT_BY[mk].i<MUT_BY[run.W.mutMin].i)mk=run.W.mutMin;
   track('runs'); track('combo',q.maxCombo); if(VARS[vk].r>=2)track('rare');
   if(VARS[vk].r>=5||MUT_BY[mk].i>=6||VARS[vk].ev)announce(_t("tirou {0}!",fullName(vk,mk)));
   const newVar=!P.items.some(i=>i.v===vk),newMut=mk!=='none'&&!P.items.some(i=>i.m===mk);
-  const item={id:rid(),v:vk,m:mk,f:0,lvl:1,s:score,t:Date.now()};
+  // Huge: a secret giant version of what you just pulled, 10% stronger and more valuable than your best Verity
+  let huge=null;
+  if(P.items.length&&Math.random()<HUGE_CHANCE*Math.sqrt(varLuck())){huge={h:1,hp:Math.round(Math.max(...P.items.map(itemPower))*1.1),hv:Math.round(Math.max(...P.items.map(itemValue))*1.1),fav:1};announce(_t("tirou uma HUGE {0}!!!",fullName(vk,mk)));P.stats.huges=(P.stats.huges||0)+1}
+  const item={id:rid(),v:vk,m:mk,f:0,lvl:1,s:score,t:Date.now(),...(huge||{})};
   const lvBefore=level();
   const xpGain=Math.round((score/6+itemValue(item)/25+(newVar?50:0)+(newMut?100:0)+(bossInfo&&bossInfo.first?300*B.world:0))*(1+run.pet.xp));
   P.items.push(item); if(team().length<petSlots())P.pets.push(item.id); P.xp+=xpGain; P.runs++; const isBest=score>P.best; if(isBest)P.best=score;
@@ -419,7 +425,7 @@ function startFinale(){
   if(!P.featManual)P.feat=null;
   saveProfile();
   const rk=score>=2200?_t("S · Cagada Lendária"):score>=1600?_t("A · Trabalho Limpo"):score>=1100?_t("B · Deu Pro Gasto"):_t("C · Parto Sofrido");
-  lastResult={score,T,rk:B?(bossInfo.first?_t("CHEFE DERROTADO!"):_t("Chefe derrotado de novo")):rk,ratio,t:q.t,isBest,vk,mk,item,newVar,newMut,maxCombo:q.maxCombo,xpGain,lvBefore,lvAfter,reward,boss:bossInfo,world:run.world};
+  lastResult={huge:!!huge,secret,score,T,rk:B?(bossInfo.first?_t("CHEFE DERROTADO!"):_t("Chefe derrotado de novo")):rk,ratio,t:q.t,isBest,vk,mk,item,newVar,newMut,maxCombo:q.maxCombo,xpGain,lvBefore,lvAfter,reward,boss:bossInfo,world:run.world};
 }
 function flushToilet(){
   const f=S.fin; if(S.mode!=='finale'||!f||f.flushing||!f.revealed)return false;
@@ -439,7 +445,7 @@ function updFinale(dt){
     if(r.mk!=='none')float(MUT_BY[r.mk].name.toUpperCase()+'!',FX,70,{size:46+mi*2,col,life:2.6,vy:-6});
     float(VARS[r.vk].name,FX,120,{size:40,col:RAR[VARS[r.vk].r].col,life:2.6,vy:-6});
   }
-  if(f.revealed&&!f.shown&&f.t>(r.newVar?2.0:2.3)){f.shown=true;if(r.newVar&&!P.seen.includes(r.vk))startCutscene(r.vk,r.mk,0,()=>{S.mode='finale';showResults(r)});else showResults(r)}
+  if(f.revealed&&!f.shown&&f.t>(r.newVar?2.0:2.3)){f.shown=true;const bigMut=(MUT_TIER[r.mk]||0)>=5;if(r.huge||r.secret||bigMut||(r.newVar&&!P.seen.includes(r.vk)))startCutscene(r.vk,r.mk,0,()=>{S.mode='finale';showResults(r)},false,{huge:r.huge,kind:!r.huge&&bigMut&&P.seen.includes(r.vk)?'mut':''});else showResults(r)}
   if(f.flushing){
     f.ft+=dt; f.ang+=(2+f.ft*7)*dt;
     if(f.ft>2.7&&!f.gone){f.gone=true;sfx.bye();float(_t("Tchau, {0}.",VARS[r.vk].name),FX,110,{size:38,col:'#ffd21f',life:2.4,vy:-14});float(_t("(ela continua na coleção)"),FX,148,{size:18,col:'#f3f1e8',life:2.4,vy:-14})}
@@ -527,6 +533,7 @@ cv.addEventListener('pointerdown',e=>{
   audioInit();
   if(S.mode==='cut'){cutSkip();e.preventDefault();return}
   if(S.mode==='gacha'){if(GA&&GA.t<GA_SPIN+.9)GA.t=GA_SPIN+.9;e.preventDefault();return}
+  if(S.mode==='battle'){btlPointer(e);e.preventDefault();return}
   if(S.paused)return;
   if(S.mode==='p1'){S.p1.ptr=localY(e);try{cv.setPointerCapture(e.pointerId)}catch(_){}}
   else if(S.mode==='p2'){ptrHold=true;try{cv.setPointerCapture(e.pointerId)}catch(_){}}
@@ -539,6 +546,7 @@ const playing=()=>S.mode==='p1'||S.mode==='p2';
 addEventListener('keydown',e=>{
   const k=e.code;
   if(S.mode==='cut'&&(k==='Escape'||k==='Space'||k==='Enter')){cutSkip();e.preventDefault();return}
+  if(S.mode==='battle'&&!isTyping(e)){if(k==='Escape'&&$('modal').hidden){if(B&&B.mode==='local'){btlClose();goMenu();openPanel('pvp')}else btlQuitAsk()}e.preventDefault();return}
   if(k==='Escape'){if(closeTopPanel())return;if(playing()){togglePause();return}}
   if(k==='ArrowUp'||k==='KeyW')keys.up=true;
   else if(k==='ArrowDown'||k==='KeyS')keys.down=true;
@@ -572,6 +580,7 @@ function update(dt){
     case'finale':updFinale(dt);break;
     case'cut':updCut(dt);break;
     case'gacha':updGacha(dt);break;
+    case'battle':updBattle(dt);break;
     default:updFx(dt);
   }
 }
@@ -587,7 +596,8 @@ function draw(){
   else if(m==='finale')drawFinale();
   else if(m==='cut'){ctx.restore();drawCut();ctx.save()}
   else if(m==='gacha'){ctx.restore();drawGacha();ctx.save()}
-  if(m!=='cut'&&m!=='gacha')drawFx();
+  else if(m==='battle'){ctx.restore();drawBattle();ctx.save()}
+  if(m!=='cut'&&m!=='gacha'&&m!=='battle')drawFx();
   ctx.restore();
   if(m==='p1')hudP1();
   else if(m==='p2')hudP2(S.p2);

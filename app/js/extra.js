@@ -86,7 +86,7 @@ const upChanceFor=(bet,tv)=>bet>0&&tv>bet?Math.min(UP_CAP,UP_EDGE*bet/tv):0;
 const upChance=()=>upChanceFor(upBet(),itemValue(upTargetItem()));
 function pctTxt(p){const v=p*100;if(v<=0)return '0%';if(v>=1)return v.toFixed(1).replace('.',DEC)+'%';if(v>=.001)return v.toFixed(3).replace('.',DEC)+'%';
   if(v>=1e-6)return v.toFixed(7).replace(/0+$/,'').replace('.',DEC)+'%';return '< 0'+DEC+'000001%'}
-const upTargets=()=>Object.keys(VARS).filter(k=>!VARS[k].hidden).sort((a,b)=>VARS[b].base-VARS[a].base);
+const upTargets=()=>Object.keys(VARS).filter(k=>!VARS[k].hidden&&!VARS[k].secret).sort((a,b)=>VARS[b].base-VARS[a].base);
 // the cheapest target worth at least `val`
 function upNearest(val){let best=null;for(const v of upTargets())for(const M of MUTS){const tv=VARS[v].base*M.mult;if(tv>=val&&(!best||tv<best.tv))best={v,m:M.k,tv}}return best}
 function upgraderRoll(ids,target){

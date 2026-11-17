@@ -314,3 +314,38 @@ canvas.prev{width:15em;height:15em}
 /* 1.7: boss drop chance on world cards */
 .excl .drop{font-size:.85em;font-weight:900;opacity:.75;margin-left:.3em}
 .excl .drop.ok{color:var(--ok);opacity:1}
+
+/* team preview cards */
+.arteam{display:grid;grid-template-columns:repeat(auto-fill,minmax(7em,1fr));gap:.4em}
+.armem{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.1em;background:rgba(0,0,0,.25);border-radius:.7em;padding:.4em}
+.armem small{font-weight:900;font-size:.72em;line-height:1.1}
+.armem .sub{font-size:.62em;font-weight:900;opacity:.75}
+
+/* Battle (turn-based PvP) */
+.mgrid2 .mbtn.pvpbtn{grid-column:span 2;text-align:center;background:linear-gradient(90deg,rgba(255,90,95,.35),rgba(255,210,31,.25));color:#fff}
+.btlbar{position:absolute;left:50%;bottom:.7em;transform:translateX(-50%);width:min(96%,62em);display:flex;align-items:center;gap:.7em;background:rgba(8,10,14,.86);border:1px solid rgba(255,210,31,.35);border-radius:1em;padding:.5em .8em;z-index:5}
+.btlwho{display:flex;align-items:center;gap:.5em;min-width:12em}
+.btlwho div{display:flex;flex-direction:column;text-align:left}
+.btlwho b{font-family:var(--display);font-weight:400;font-size:1.05em;color:var(--verity)}
+.btlwho small{font-size:.72em;font-weight:900;opacity:.8}
+.btlacts{display:flex;gap:.35em}
+.btlacts .btn{display:flex;flex-direction:column;align-items:center;line-height:1.05;padding:.35em .7em}
+.btlacts .btn small{font-size:.62em;font-weight:900;opacity:.8;font-family:var(--body)}
+.btlacts .btn.skill{box-shadow:inset 0 0 0 .14em var(--skc)}
+.btlhint{display:flex;flex-direction:column;flex:1;min-width:0;text-align:left}
+.btlhint b{font-size:.85em;color:var(--mint)}
+.btlhint small{font-size:.7em;font-weight:800;opacity:.85}
+.btlwait{flex:1;font-weight:900;opacity:.85}
+.btlend{background:rgba(5,8,10,.82)}
+.berating{display:flex;gap:.8em;align-items:center;justify-content:center;font-weight:900}
+.berating b{font-family:var(--display);font-weight:400;font-size:1.8em}
+.berating b.up{color:var(--ok)}
+.berating b.down{color:var(--danger)}
+.kingban{background:linear-gradient(90deg,rgba(255,210,31,.22),rgba(255,210,31,.05));border-radius:.8em;padding:.5em .9em;font-weight:900;color:var(--verity)}
+.kingban.dim{color:var(--porcelain);opacity:.8}
+.pvprow{grid-template-columns:auto auto minmax(0,1fr) auto auto}
+.pvppets{display:flex;gap:.15em}
+
+/* secret Verities */
+.excl.secret small{color:#00ffc8;font-weight:900;font-size:.82em}
+

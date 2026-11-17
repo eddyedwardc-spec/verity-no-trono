@@ -132,7 +132,7 @@ const MARMITAS=[
 ];
 function marmitaPool(){
   const reg=WORLDS[clamp(P.world.max,1,WORLDS.length)-1].region,ev=evMods().vars;
-  return VAR_ORDER.filter(v=>{const V=VARS[v];if(V.hidden||V.b)return false;if(V.ev)return ev.includes(v);if(V.reg)return V.reg<=reg;return true}).map(v=>({k:v,r:VARS[v].r}));
+  return VAR_ORDER.filter(v=>{const V=VARS[v];if(V.hidden||V.b||V.secret)return false;if(V.ev)return ev.includes(v);if(V.reg)return V.reg<=reg;return true}).map(v=>({k:v,r:VARS[v].r}));
 }
 const ALBU_BANQUETE=1/800;
 function openMarmita(k,free,batch){
@@ -174,6 +174,8 @@ const ACH=[
   ['mundo100',_t("Viajante Dimensional"),_t("Chegue ao mundo 100."),()=>Math.max(P.world.max,P.stats.maxWorld||0),100,80],
   ['mundo260',_t("Fim de Todas as Dimensões"),_t("Derrote o chefe do mundo 260."),()=>P.world.beaten.includes(260)||P.stats.beat260?1:0,1,500],
   ['renasce15',_t("Imortal"),_t("Renasça 15 vezes."),()=>P.rebirths||0,15,150],
+  ['secreta',_t("Caçador de Segredos"),_t("Tenha uma Verity Secreta."),()=>has(i=>VARS[i.v].secret)?1:0,1,400],
+  ['huge',_t("Gigante"),_t("Tenha uma Verity Huge."),()=>has(i=>i.h)?1:0,1,250],
   ['albu',_t("Lenda Viva"),_t("Tenha o Albuquerque."),()=>has(i=>i.v==='albuquerque')?1:0,1,300],
   ['exu',_t("Laroyê"),_t("Tenha um Exu."),()=>has(i=>i.v==='exu')?1:0,1,30],
   ['col20',_t("Colecionador"),_t("Encontre 20 variantes diferentes."),()=>new Set(P.items.map(i=>i.v)).size,20,30],

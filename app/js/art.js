@@ -33,7 +33,7 @@ const MUTS=[
   {k:'god',name:'God',mult:500,col:'#fff0a0',p:.0006,min:1200}
 ];
 const MUT_BY=Object.fromEntries(MUTS.map((m,i)=>[m.k,{...m,i}]));
-const fullName=(v,m,f)=>(f?FUSE[f].name+' ':'')+(m&&m!=='none'?MUT_BY[m].name+' ':'')+VARS[v].name;
+const fullName=(v,m,f,h)=>(h?'Huge ':'')+(f?FUSE[f].name+' ':'')+(m&&m!=='none'?MUT_BY[m].name+' ':'')+VARS[v].name;
 const stars=n=>'★'.repeat(n+1);
 
 /* ---------- Verity rendering ---------- */
@@ -226,6 +226,7 @@ function mutFront(x,y,r,vk,mk,t){
 function drawVariant(x,y,r,vk,mk,o={}){
   const V=VARS[vk]||VARS.verity,t=o.t??S.time,fx=!o.noFx;
   mk=MUT_BY[mk]?mk:'none';
+  if(V.secret&&typeof drawSecret==='function'){drawSecret(x,y,r,vk,mk,o);return}
   ctx.save();
   if(fx&&mk==='god'){
     ctx.save();ctx.translate(x,y);ctx.rotate(t*.3);
@@ -537,7 +538,13 @@ function thumbVerity(vk,mk,em=4,o={}){
       drawVariant(50,54,26,vk,'none',{noFx:true,face:false,t:1.3});
       ctx.globalCompositeOperation='source-atop'; ctx.fillStyle='#3b5752'; ctx.fillRect(0,0,100,100); ctx.globalCompositeOperation='source-over';
       txt('?',50,56,30,'#c9f5e6',{stroke:false});
-    }else drawVariant(50,(vk==='lord'||vk==='exu')?58:54,o.r||26,vk,mk,{glow:.55,t:o.t??1.3,lvl:o.lvl,badge:o.badge,f:o.f});
+    }else{
+      if(VARS[vk]&&VARS[vk].secret){const g=ctx.createLinearGradient(0,0,100,100);g.addColorStop(0,'#2a0a4a');g.addColorStop(.5,'#5a1a7a');g.addColorStop(1,'#0a2a4a');ctx.fillStyle=g;rr(2,2,96,96,14);ctx.fill()}
+      if(o.huge){const g=ctx.createRadialGradient(50,52,10,50,52,50);g.addColorStop(0,'rgba(255,210,31,.45)');g.addColorStop(1,'rgba(255,210,31,0)');ctx.fillStyle=g;ctx.fillRect(0,0,100,100)}
+      drawVariant(50,o.huge?50:VARS[vk]&&VARS[vk].secret?44:(vk==='lord'||vk==='exu')?58:54,o.r||(o.huge?34:VARS[vk]&&VARS[vk].secret?27:26),vk,mk,{glow:.55,t:o.t??1.3,lvl:o.huge?null:o.lvl,badge:o.badge,f:o.f});
+      if(o.huge)txt('HUGE',50,91,16,'#ffd21f',{sc:'#3a2400'});
+      if(VARS[vk]&&VARS[vk].secret&&!o.huge)txt('SECRET',50,90,15,'#ff5af0',{sc:'#1a0028'});
+    }
   });
   c.setAttribute('role','img'); c.setAttribute('aria-label',o.locked?_t("Variante não encontrada"):fullName(vk,mk));
   return c;

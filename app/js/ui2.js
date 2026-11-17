@@ -152,6 +152,7 @@ function renderJourney(){
     c.append(el('div','bline',B.mods.length?B.mods.map(m=>MOD_TXT[m]).join(', '):_t("sem truques")));
     {const ex=el('div','excl');ex.append(document.createTextNode(_t("Deixa: ")));ex.append(thumbVerity(B.drop,'none',2.2,{locked:!P.items.some(i=>i.v===B.drop),badge:false}));
       const ch=el('small','drop'+(beaten?'':' ok'),(beaten?_t("10%"):_t("garantida"))+' · '+BOSS_MUT_TXT[Wd.fase-1]);ex.append(ch);c.append(ex)}
+    for(const sc of secretsAt(Wd.n)){const sx=el('div','excl secret');sx.append(thumbVerity(sc.k,'none',2.2,{locked:!P.items.some(i=>i.v===sc.k),badge:false}),el('small',null,_t('🤫 Uma Verity Secreta se esconde aqui')));c.append(sx)}
     if(Wd.pool.length){const ex=el('div','excl');for(const [k] of Wd.pool)ex.append(thumbVerity(k,'none',2,{locked:!P.items.some(i=>i.v===k),badge:false}));c.append(ex)}
     const row=el('div','row'),pl=el('button','btn sm',_t("Jogar")),bs=el('button','btn sm danger',beaten?_t("Chefe"):_t("Chefe!"));
     pl.disabled=!open; bs.disabled=!open;

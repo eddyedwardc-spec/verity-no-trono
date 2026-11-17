@@ -49,6 +49,22 @@ app.whenReady().then(async () => {
     ok('chat share verity', await js(B, `await new Promise(r=>setTimeout(r,700));await chatSend('${uidA}',{verity:P.items[0],text:'olha'});closePanel('chat');return 'sent'`));
     ok('chat A sees verity', await js(A, `await waitFor(()=>{const d=CHAT.docs['${uidB}'];return d&&d.last&&d.last.verity});return lastText(CHAT.docs['${uidB}'].last)+' / unread '+chatUnreadCount()`));
     ok('chat stranger blocked', await js(A, `try{await NET.fs.collection('chats').doc('aaaa_zzzz').get();return 'NOT blocked'}catch(e){return e.code||e.message}`));
+    // turn-based battle (needs the battles rules published; run with VERITY_BATTLE=1)
+    if (process.env.VERITY_BATTLE) {
+    const DRIVE = `window.drv=setInterval(()=>{S.time+=.1;update(.1);if(B&&B.phase==='play'&&!B.ev&&!B.evq.length&&!B.S.over&&B.S.cur!=null&&myTurn()&&!B.sending)btlSubmit(btlAuto(B.S))},40);return 1`;
+    const TEAM = JSON.stringify([{ v: 'lord', m: 'ouro', f: 0, lvl: 10 }, { v: 'exu', m: 'none', f: 0, lvl: 5 }, { v: 'lovity', m: 'bronze', f: 0, lvl: 8 }, { v: 'obesity', m: 'none', f: 0, lvl: 12 }]);
+    const bid = await js(A, `return await pvpCreate('${uidB}','${NAME_B}',${TEAM},1000)`);
+    ok('battle challenge', bid ? 'sent' : 'failed');
+    ok('battle accept', await js(B, `await waitFor(()=>PVP.inv.some(d=>d.id==='${bid}'&&d.status==='invite'));closeModal();await pvpAccept('${bid}',${TEAM});return 'accepted'`));
+    for (const w of [A, B]) await js(w, `await waitFor(()=>[...PVP.inv,...PVP.mine].some(d=>d.id==='${bid}'&&d.status==='active'));if(!B||B.id!=='${bid}')pvpOpen([...PVP.inv,...PVP.mine].find(d=>d.id==='${bid}'));${DRIVE}`);
+    const fin = await Promise.all([A, B].map(w => js(w, `await waitFor(()=>B&&B.S.over&&B.doc&&B.doc.status==='done'&&B.applied===(B.doc.acts||[]).length,120000);clearInterval(drv);return {win:B.S.win,by:B.S.by,acts:B.applied,hp:B.S.units.map(u=>u.hp),me:B.me}`)));
+    ok('battle finished', fin.map(f => f.by + ' win=' + f.win + ' acts=' + f.acts));
+    if (JSON.stringify(fin[0].hp) !== JSON.stringify(fin[1].hp) || fin[0].win !== fin[1].win) throw new Error('battle results differ: ' + JSON.stringify(fin));
+    ok('battle same on both', fin[0].hp);
+    ok('battle ratings', await Promise.all([A, B].map(w => js(w, `await waitFor(()=>P.pvp.w+P.pvp.l===1);return P.pvp`))));
+    await js(A, `btlClose();await NET.fs.collection('battles').doc('${bid}').delete();return 1`); await js(B, 'btlClose();return 1');
+    }
+
     ok('see friend collection', await js(A, `const f=await fetchPlayer('${uidB}');window.fB=f;return f.username+' has '+f.items.map(i=>i.id).join(',')`));
     ok('propose trade', await js(A, `await proposeTrade('${uidB}','${NAME_B}',['ta2'],[fB.items.find(i=>i.id==='tb2')],100);return {items:P.items.map(i=>i.id),money:P.money}`));
     ok('accept trade', await js(B, `await waitFor(()=>NET.tradesIn.some(t=>t.status==='open'));await acceptTrade(NET.tradesIn.find(t=>t.status==='open'));return {items:P.items.map(i=>i.id),money:P.money}`));

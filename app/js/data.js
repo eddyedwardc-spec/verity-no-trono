@@ -10,25 +10,25 @@ const BOOSTS={
   lock:{name:_t("Tranca Extra"),desc:_t("Se você perder uma batida, a porta aguenta uma vez."),price:900}
 };
 const INSTANT_SELL=.7,MAX_LVL=50;
-const PROTO=4; // data format version; older clients can't receive Verities that use it
+const PROTO=5; // data format version; older clients can't receive Verities that use it
 const itemBase=it=>VARS[it.v].base*MUT_BY[it.m].mult*FUSE[it.f||0].val;
-const itemValue=it=>Math.round(itemBase(it)*(1+.08*((it.lvl||1)-1)));
+const itemValue=it=>it.h?it.hv:Math.round(itemBase(it)*(1+.08*((it.lvl||1)-1)));
 const upCost=it=>Math.round(itemBase(it)*.12*Math.pow(1.09,(it.lvl||1)-1));
 const sellPrice=it=>Math.round(itemValue(it)*INSTANT_SELL);
-const itemRank=it=>(it.f||0)*1000+MUT_BY[it.m].i*100+VARS[it.v].r*10+VARS[it.v].base/100000;
-const itemPower=it=>Math.round(POW_BY_RAR[VARS[it.v].r]*(MUT_POW[it.m]||1)*(1+.06*((it.lvl||1)-1))*FUSE[it.f||0].pow);
+const itemRank=it=>(it.h?5000:0)+(it.f||0)*1000+MUT_BY[it.m].i*100+VARS[it.v].r*10+VARS[it.v].base/100000;
+const itemPower=it=>it.h?it.hp:Math.round(POW_BY_RAR[VARS[it.v].r]*(MUT_POW[it.m]||1)*(1+.06*((it.lvl||1)-1))*FUSE[it.f||0].pow);
 const xpAt=L=>Math.round(60*Math.pow(L-1,1.8));
 function levelOf(xp){let L=1;while(L<200&&xp>=xpAt(L+1))L++;return L}
 
 /* ---------- profile ---------- */
 const PKEY='verity-perfil';
 let P=null;
-function newProfile(){return{ver:3,uid:null,username:'',money:0,xp:0,best:0,runs:0,items:[],unknown:[],feat:null,featManual:false,pets:[],world:{max:1,beaten:[],cur:1},rolos:0,rebirths:0,title:'',daily:{last:'',streak:0},missions:{day:'',list:[],bonus:false},museum:{ids:[],last:0},ach:{},codes:[],seen:[],ann:{t:'',at:0},
+function newProfile(){return{ver:3,uid:null,username:'',money:0,xp:0,best:0,runs:0,items:[],unknown:[],feat:null,featManual:false,pets:[],world:{max:1,beaten:[],cur:1},rolos:0,rebirths:0,title:'',daily:{last:'',streak:0},missions:{day:'',list:[],bonus:false},museum:{ids:[],last:0},ach:{},codes:[],seen:[],ann:{t:'',at:0},pvp:{r:1000,w:0,l:0},
   owned:{skin:[],hair:[],hat:[],glasses:[],shirt:[],bath:[1],intr:[]},eq:{...DEFAULT_EQ},boosts:{},friends:[],settled:[],updatedAt:0,
   stats:{maxCombo:0,invaded:0,importedClaude:false}}}
 function sanitizeItem(it){
   if(!it||typeof it!=='object'||!VARS[it.v]||VARS[it.v].hidden||!MUT_BY[it.m])return null;
-  return{id:String(it.id||rid()).replace(/[^a-z0-9]/gi,'').slice(0,24)||rid(),v:it.v,m:it.m,lvl:clamp(Math.round(+it.lvl||1),1,MAX_LVL),f:clamp(Math.round(+it.f||0),0,2),s:Math.max(0,Math.round(+it.s||0)),t:+it.t||Date.now(),...(it.fav?{fav:1}:{})};
+  return{id:String(it.id||rid()).replace(/[^a-z0-9]/gi,'').slice(0,24)||rid(),v:it.v,m:it.m,lvl:clamp(Math.round(+it.lvl||1),1,MAX_LVL),f:clamp(Math.round(+it.f||0),0,2),s:Math.max(0,Math.round(+it.s||0)),t:+it.t||Date.now(),...(it.fav?{fav:1}:{}),...(it.h?{h:1,hp:Math.max(1,Math.round(+it.hp||1)),hv:Math.max(1,Math.round(+it.hv||1))}:{})};
 }
 function sanitizeProfile(d){
   const p=newProfile(); if(!d||typeof d!=='object')return p;
@@ -56,6 +56,7 @@ function sanitizeProfile(d){
   if(d.ach&&typeof d.ach==='object')for(const [k,v] of Object.entries(d.ach))if(typeof k==='string'&&v)p.ach[k]=+v||1;
   if(Array.isArray(d.codes))p.codes=d.codes.filter(x=>typeof x==='string').slice(0,200);
   if(Array.isArray(d.seen))p.seen=d.seen.filter(x=>typeof x==='string'&&VARS[x]).slice(0,200);
+  if(d.pvp&&typeof d.pvp==='object')p.pvp={r:clamp(Math.round(+d.pvp.r||1000),0,99999),w:Math.max(0,Math.round(+d.pvp.w||0)),l:Math.max(0,Math.round(+d.pvp.l||0))};
   if(d.ann&&typeof d.ann==='object')p.ann={t:String(d.ann.t||'').slice(0,90),at:+d.ann.at||0};
   ensureFree(p); return p;
 }
@@ -108,7 +109,7 @@ function togglePet(id){
   if(team().length>=petSlots()){const weak=team().reduce((w,i)=>!w||itemPower(i)<itemPower(w)?i:w,null);P.pets=P.pets.filter(x=>x!==weak.id);msg=_t("Entrou no lugar de {0}.",fullName(weak.v,weak.m,weak.f))}
   P.pets.push(id); saveProfile(); return msg;
 }
-const sameKind=(a,b)=>a.v===b.v&&a.m===b.m&&(a.f||0)===(b.f||0);
+const sameKind=(a,b)=>a.v===b.v&&a.m===b.m&&(a.f||0)===(b.f||0)&&!a.h&&!b.h;
 const fuseCost=it=>Math.round(itemBase(it)*.5);
 function fuseGroup(it){return P.items.filter(x=>sameKind(x,it))}
 // the 5 that a fusion uses: this one plus the 4 least important copies (not favorites, not in the team, lowest level first)
@@ -141,7 +142,7 @@ function sellItem(id){const i=P.items.findIndex(x=>x.id===id);if(i<0)return _t("
 /* cost of n upgrades in a row, and how many levels the money can buy right now */
 function upCostN(it,n){let c=0;for(let l=it.lvl;l<Math.min(MAX_LVL,it.lvl+n);l++)c+=upCost({...it,lvl:l});return c}
 function upMax(it){let n=0,c=0;for(let l=it.lvl;l<MAX_LVL;l++){const k=upCost({...it,lvl:l});if(c+k>P.money)break;c+=k;n++}return n}
-function upgradeItem(id,n=1){const it=P.items.find(x=>x.id===id);if(!it)return _t("Verity não encontrada.");if(it.lvl>=MAX_LVL)return _t("Nível máximo.");n=Math.min(Math.max(1,Math.floor(n)),MAX_LVL-it.lvl);const e=spend(upCostN(it,n));if(e)return e;it.lvl+=n;track('upgrade',n);saveProfile();return ''}
+function upgradeItem(id,n=1){const it=P.items.find(x=>x.id===id);if(!it)return _t("Verity não encontrada.");if(it.h)return _t("Verities Huge já vêm no máximo.");if(it.lvl>=MAX_LVL)return _t("Nível máximo.");n=Math.min(Math.max(1,Math.floor(n)),MAX_LVL-it.lvl);const e=spend(upCostN(it,n));if(e)return e;it.lvl+=n;track('upgrade',n);saveProfile();return ''}
 function sellMany(ids){let total=0,n=0;const set=new Set(ids);for(const it of P.items)if(set.has(it.id)){total+=sellPrice(it);n++}
   P.items=P.items.filter(x=>!set.has(x.id));P.pets=P.pets.filter(x=>!set.has(x));P.museum.ids=P.museum.ids.filter(x=>!set.has(x));if(set.has(P.feat)){P.feat=null;P.featManual=false}
   P.money+=total;P.stats.sold=(P.stats.sold||0)+n;saveProfile();return{n,total}}
@@ -158,7 +159,7 @@ const UPDATE_MSG=_t("Essa oferta tem uma Verity de uma versão mais nova do jogo
    listings hold the offered Verities in escrow until the other side settles.
    ====================================================================== */
 const NET={status:'off',msg:'',uid:null,fs:null,unsubs:[],reqIn:[],reqOut:[],tradesIn:[],tradesOut:[],myListings:[],pushTimer:null,pushing:false,again:false};
-const online=()=>NET.status==='online';
+const online=()=>NET.status===_t("online");
 function netChanged(){if(typeof onNetChange==='function')onNetChange()}
 function netErr(e){NET.msg=String(e&&e.message||e);netChanged()}
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error(_t("não carregou ")+src));document.head.append(s)})}
@@ -181,7 +182,7 @@ async function netInit(){
     const user=await new Promise((res,rej)=>{const un=auth.onAuthStateChanged(u=>{un();if(u)res(u);else auth.signInAnonymously().then(c=>res(c.user),rej)},rej)});
     NET.uid=user.uid;
     await pullProfile();
-    NET.status='online'; NET.msg='';
+    NET.status=_t("online"); NET.msg='';
     if(P.username){try{await claimUsername(P.username)}catch(e){P.username='';NET.msg=e.message;saveProfile()}}
     subscribeAll(); pushNow();
   }catch(e){NET.status='erro';NET.msg=String(e&&e.message||e)}
@@ -206,7 +207,7 @@ function playerDoc(){
   return{username:P.username,uname_lc:P.username.toLowerCase(),xp:P.xp,level:level(),money:P.money,best:P.best,runs:P.runs,
     totalValue:totalValue(),count:P.items.length,rolos:P.rolos,rebirths:P.rebirths,title:P.title,ann:P.ann.t,annAt:P.ann.at||0,bestV:f?{v:f.v,m:f.m,lvl:f.lvl,val:itemValue(f)}:null,rareV:r?{v:r.v,m:r.m,lvl:r.lvl}:null,
     power:teamPower(),world:P.world.max,proto:PROTO,pets:team().map(i=>({v:i.v,m:i.m,f:i.f||0,lvl:i.lvl})),
-    eq:P.eq,owned:P.owned,boosts:P.boosts,friends:P.friends,petIds:P.pets,worldState:P.world,settled:P.settled.slice(-300),stats:P.stats,daily:P.daily,missions:P.missions,museum:P.museum,ach:P.ach,codes:P.codes,seen:P.seen,annObj:P.ann,updatedAt:P.updatedAt};
+    eq:P.eq,owned:P.owned,boosts:P.boosts,friends:P.friends,petIds:P.pets,worldState:P.world,settled:P.settled.slice(-300),stats:P.stats,daily:P.daily,missions:P.missions,museum:P.museum,ach:P.ach,codes:P.codes,seen:P.seen,annObj:P.ann,updatedAt:P.updatedAt,pvp:P.pvp,seenAt:Date.now(),...(P.pvp.w+P.pvp.l?{pvpR:P.pvp.r}:{})};
 }
 function schedulePush(){if(!online())return;clearTimeout(NET.pushTimer);NET.pushTimer=setTimeout(pushNow,700)}
 async function pushNow(){
@@ -263,6 +264,7 @@ function subscribeAll(){
     }
     netChanged();
   },netErr));
+  if(typeof pvpSubscribe==='function')pvpSubscribe();
 }
 function toastSafe(m){if(typeof toast==='function')toast(m)}
 const needOnline=()=>online()?'':_t("Você precisa estar online pra isso.");

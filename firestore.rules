@@ -46,6 +46,18 @@ service cloud.firestore {
       }
     }
 
+    // Batalhas: quem desafia cria; só os dois jogadores leem e mexem.
+    match /battles/{id} {
+      allow read: if signedIn() && (resource.data.a == me() || resource.data.b == me());
+      allow create: if signedIn() && request.resource.data.a == me() && request.resource.data.status == 'invite';
+      allow update, delete: if signedIn() && (resource.data.a == me() || resource.data.b == me());
+    }
+
+    // Rei do Morro: um documento por dia, criado uma vez e nunca mais mudado.
+    match /kings/{day} {
+      allow read, create: if signedIn();
+    }
+
     // Códigos secretos e avisos que o dono do jogo cria pelo console do Firebase (meta/codes). Só leitura.
     match /meta/{doc} {
       allow read: if signedIn();

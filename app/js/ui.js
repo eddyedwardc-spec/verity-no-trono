@@ -25,7 +25,7 @@ function confirmDo(title,text,label,fn,cls){modal(title,text,[{label,fn,cls},{la
 function act(fn,okMsg,snd='buy'){const e=fn();if(e){toast(e);sfx.err();return false}if(okMsg)toast(okMsg);if(snd)sfx[snd]();return true}
 
 /* ---------- screens & panels ---------- */
-const SCREENS=['setup','menu','card1','card2','bossCard','fail','pause'];
+const SCREENS=['setup','menu','card1','card2','bossCard','fail','pause','btlEnd'];
 function showOnly(id){
   for(const s of SCREENS)$(s).hidden=s!==id;
   $('results').hidden=true; $('pauseBtn').hidden=!(id===null&&playing());
@@ -94,8 +94,8 @@ function mutChip(mk){const M=MUT_BY[mk],c=el('span','chip',mk==='none'?_t("Sem m
 function itemCard(it,o={}){
   const V=VARS[it.v],R=RAR[V.r],M=MUT_BY[it.m];
   const b=el('button','icard'); b.type='button'; b.style.setProperty('--rc',R.col+'99'); b.setAttribute('aria-pressed',o.sel?'true':'false');
-  b.append(thumbVerity(it.v,it.m,o.em||4.6,{lvl:it.lvl,f:it.f}));
-  const nm=el('span','nm',fullName(it.v,it.m,it.f)); if(it.f)nm.style.color=FUSE[it.f].col;else if(it.m!=='none')nm.style.color=M.col;
+  b.append(thumbVerity(it.v,it.m,o.em||4.6,{lvl:it.lvl,f:it.f,huge:it.h}));
+  const nm=el('span','nm',fullName(it.v,it.m,it.f,it.h)); if(it.h)nm.style.color='#ffd21f';else if(it.f)nm.style.color=FUSE[it.f].col;else if(it.m!=='none')nm.style.color=M.col;
   const sub=el('span','sub',_t("{0} {1} · Nv {2}",R.name,stars(V.r),it.lvl)); sub.style.color=R.col;
   b.append(nm,sub,el('span','sub pow',_t("Poder ")+fmt(itemPower(it))),el('span','val',money(o.price??itemValue(it))));
   if(o.extra)b.append(el('span','sub',o.extra));
@@ -216,7 +216,7 @@ function showResults(r){
   const M=MUT_BY[r.mk],R=RAR[VARS[r.vk].r];
   $('rsRank').textContent=r.rk;
   const me=$('rsMut'); me.textContent=M.name; me.style.color=M.col; me.hidden=r.mk==='none';
-  const rv=$('rsVar'); rv.textContent=VARS[r.vk].name; rv.style.color=R.col;
+  const rv=$('rsVar'); rv.textContent=(r.huge?'Huge ':'')+VARS[r.vk].name; rv.style.color=R.col;
   const rc=$('rsRar'); rc.textContent=`${R.name} ${stars(VARS[r.vk].r)}`; rc.style.color=R.col;
   $('rsVal').textContent=_t("Vale ")+money(itemValue(r.item));
   const tags=[];if(r.newVar)tags.push(_t("variante nova!"));if(r.newMut)tags.push(_t("mutação nova!"));if(r.isBest)tags.push(_t("novo recorde!"));
@@ -264,15 +264,15 @@ function renderCollDetail(it){
   ANIM.coll=()=>drawPrev(c,()=>drawVariant(50,(it.v==='lord'||it.v==='exu')?58:52,24,it.v,it.m,{glow:1,lvl:it.lvl,f:it.f}));
   ANIM.coll();
   const box=el('div','detail');
-  const nm=el('p','vname',fullName(it.v,it.m,it.f)); if(it.f)nm.style.color=FUSE[it.f].col;else if(it.m!=='none')nm.style.color=MUT_BY[it.m].col;
+  const nm=el('p','vname',fullName(it.v,it.m,it.f,it.h)); if(it.h)nm.style.color='#ffd21f';else if(it.f)nm.style.color=FUSE[it.f].col;else if(it.m!=='none')nm.style.color=MUT_BY[it.m].col;
   const chips=el('p','chips'); chips.append(rarChip(it.v),mutChip(it.m)); if(it.f){const fc=el('span','chip',FUSE[it.f].name+' ×'+FUSE[it.f].pow+_t(" poder"));fc.style.color=FUSE[it.f].col;chips.append(fc)}
   const lv=el('div','lvl'); lv.append(el('span',null,_t("Nível {0}/{1} · +8% de valor por nível",it.lvl,MAX_LVL))); const xb=el('div','xpbar'),xi=el('i'); xi.style.width=(it.lvl/MAX_LVL*100)+'%'; xb.append(xi); lv.append(xb);
   const pw=el('p','vname',_t("Poder ")+fmt(itemPower(it))); pw.style.color='var(--mint)';
   const ab=VARS[it.v].abil; box.append(nm,chips,pw,el('p','small',ab?_t("Como pet · ")+abilText([ab[0],ab[1]*(1+(it.f||0)*.5)]):_t("Sem habilidade de pet.")),el('p','vname',money(itemValue(it))),lv);
   box.append(favButton(it));
   const acts=el('div','actions');
-  const upBox=el('div','upbox');upBox.append(el('p','qlabel',it.lvl>=MAX_LVL?_t("Nível máximo"):_t("Upgrade de nível (cada um custa mais)")));
-  if(it.lvl<MAX_LVL)upBox.append(qtyRow({prefix:'+',cap:MAX_LVL-it.lvl,cost:n=>upCostN(it,n),max:()=>upMax(it),fmt:money,buy:n=>{const to=Math.min(MAX_LVL,it.lvl+n);act(()=>upgradeItem(it.id,n),_t("Nível {0}!",to),'up')}}));
+  const upBox=el('div','upbox');upBox.append(el('p','qlabel',it.h?_t("HUGE: 10% mais forte que a sua melhor Verity quando saiu. Não sobe de nível nem funde."):it.lvl>=MAX_LVL?_t("Nível máximo"):_t("Upgrade de nível (cada um custa mais)")));
+  if(it.lvl<MAX_LVL&&!it.h)upBox.append(qtyRow({prefix:'+',cap:MAX_LVL-it.lvl,cost:n=>upCostN(it,n),max:()=>upMax(it),fmt:money,buy:n=>{const to=Math.min(MAX_LVL,it.lvl+n);act(()=>upgradeItem(it.id,n),_t("Nível {0}!",to),'up')}}));
   box.append(upBox);
   const sell=el('button','btn ghost sm',_t("Vender pro jogo · {0}",money(sellPrice(it))));
   sell.onclick=()=>guardFav([it],()=>confirmDo(_t("Vender pro jogo?"),_t("{0} Nv {1} por {2} (70% do valor).",fullName(it.v,it.m,it.f),it.lvl,money(sellPrice(it))),_t("Vender"),()=>act(()=>sellItem(it.id),_t("Vendida!"),'coin')));
@@ -283,7 +283,7 @@ function renderCollDetail(it){
   const inTeam=P.pets.includes(it.id),pt=el('button','btn sm',inTeam?_t("Tirar da equipe"):_t("Pôr na equipe"));
   pt.onclick=()=>{toast(togglePet(it.id));sfx.click()};
   const grp=fuseGroup(it).length,fu=el('button','btn ghost sm',(it.f||0)>=2?_t("Fusão máxima"):_t("Fundir 5 iguais ({0}/5) · {1}",grp,money(fuseCost(it))));
-  fu.disabled=(it.f||0)>=2||grp<5||P.money<fuseCost(it);
+  fu.disabled=!!it.h||(it.f||0)>=2||grp<5||P.money<fuseCost(it);
   fu.title=_t("5 Verities iguais (mesma variante, mutação e fusão) viram 1 ")+((it.f||0)?_t("Arco-íris"):_t("Dourada"))+_t(", bem mais forte.");
   fu.onclick=()=>guardFav(fuseUsed(it),()=>confirmDo(_t("Fundir?"),_t("5 × {0} viram 1 {1}. Custa {2}. O nível fica o maior entre elas.",fullName(it.v,it.m,it.f),fullName(it.v,it.m,(it.f||0)+1),money(fuseCost(it))),_t("Fundir"),()=>{if(act(()=>fuseItem(it.id),_t("Fusão feita!"),'up')){collSel=LAST_FUSED;renderColl()}}));
   const inMu=P.museum.ids.includes(it.id),mu=el('button','btn ghost sm',inMu?_t("Tirar do Museu"):_t("Expor no Museu"));
